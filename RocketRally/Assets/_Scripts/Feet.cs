@@ -5,7 +5,7 @@ using UnityEngine;
 public class Feet : MonoBehaviour
 {
     private bool m_onGround = false;
-    public bool OnGround { get => m_onGround; }
+    public bool OnGround { get { return m_onGround; } }
 
     private void OnTriggerEnter(Collider other)
     {

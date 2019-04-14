@@ -8,6 +8,8 @@ public class Gravity : MonoBehaviour
     private Planet m_planet;
     private Transform m_planetTransform;
     private Camera m_head;
+    private Gun m_gun;
+
     [SerializeField]
     private Transform m_body;
     private Feet m_feet;
@@ -23,12 +25,20 @@ public class Gravity : MonoBehaviour
 
     private void Start()
     {
+        Cursor.lockState = CursorLockMode.Locked;
+
         m_head = GetComponentInChildren<Camera>();
         m_feet = GetComponentInChildren<Feet>();
         m_rigidBody = GetComponent<Rigidbody>();
         m_planet = FindObjectOfType<Planet>();
+        m_gun = GetComponentInChildren<Gun>();
 
         m_planetTransform = m_planet.transform;
+    }
+
+    private void Update()
+    {
+        UpdateShooting();
     }
 
     private void FixedUpdate()
@@ -40,10 +50,20 @@ public class Gravity : MonoBehaviour
         UpdateRotations();
     }
 
+    private void UpdateShooting()
+    {
+        if (Input.GetAxis("Fire1") > 0)
+        {
+            m_gun.Fire();
+        }
+    }
+
     private void UpdateGravity()
     {
         m_rigidBody.AddForce((transform.position - m_planetTransform.position).normalized * m_planet.gravity);
     }
+
+    #region fixed updated functions
     private void UpdateMovement()
     {
         Vector3 direction = Vector3.zero;
@@ -62,7 +82,6 @@ public class Gravity : MonoBehaviour
         transform.Translate(direction * Time.fixedDeltaTime * speed, Space.World);
         //m_rigidBody.AddForce(direction * 10);
     }
-
     private void UpdateJump()
     {
         if (Input.GetAxis("Jump") <= 0)
@@ -82,7 +101,6 @@ public class Gravity : MonoBehaviour
 
         m_rigidBody.AddForce(transform.up * m_jumpForce, ForceMode.Impulse);
     }
-
     private void UpdateHeadAndBody()
     {
         float yaw = Input.GetAxis("Mouse X");
@@ -92,13 +110,13 @@ public class Gravity : MonoBehaviour
 
         m_body.Rotate(0, yaw, 0);
     }
-
     private void UpdateRotations()
     {
         Vector3 up = (transform.position - m_planetTransform.position).normalized;
 
         transform.up = up;
     }
+    #endregion
 
     private IEnumerator JumpCoolDown()
     {
