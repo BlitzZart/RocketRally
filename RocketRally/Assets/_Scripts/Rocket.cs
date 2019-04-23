@@ -9,7 +9,7 @@ public class Rocket : MonoBehaviour
     private Transform m_owner;
     private bool m_fired = false;
     private Rigidbody m_body;
-    private float m_force = 50.0f;
+    private float m_force = 75.0f;
 
     public void Fire(Transform owner)
     {

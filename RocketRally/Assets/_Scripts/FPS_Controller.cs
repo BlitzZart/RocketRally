@@ -1,11 +1,12 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-public class Gravity : MonoBehaviour
+public class FPS_Controller : MonoBehaviour
 {
+    // planet transition
     public LayerMask planetOnlyMask;
-
     public Planet currentPlanet;
+    private bool m_isInPlanetTransition = false;
 
     private Rigidbody m_rigidBody;
     private Transform m_planetTransform;
@@ -19,7 +20,7 @@ public class Gravity : MonoBehaviour
     private Transform m_body;
     private Feet m_feet;
 
-    private bool m_isInPlanetTransition = false;
+    private bool m_isInTransitionInitiationPhase = false;
     private Vector3 m_planetTransitionHit;
 
     // Movement
@@ -65,7 +66,15 @@ public class Gravity : MonoBehaviour
     private void UpdateGravity()
     {
         m_upVector = (transform.position - m_planetTransform.position).normalized;
-        m_rigidBody.AddForce(m_upVector * currentPlanet.gravity);
+
+        float gravity = currentPlanet.gravity;
+
+        if (m_isInPlanetTransition)
+        {
+            gravity *= 3.0f;
+        }
+
+        m_rigidBody.AddForce(m_upVector * gravity);
     }
     private void UpdatePlanedSelection()
     {
@@ -99,8 +108,15 @@ public class Gravity : MonoBehaviour
         float speed = m_walkSpeed;
         if (Input.GetAxis("Run") > 0) { speed = m_runSpeed; }
 
+        // use forces to move
+        //if (!m_feet.OnGround)
+        //{
+        //    speed *= 0.5f;
+        //}
+
         // MOVE
         transform.Translate(moveDirection * speed * Time.fixedDeltaTime);
+        //m_rigidBody.MovePosition(moveDirection * speed * Time.fixedDeltaTime);
 
         // ROTATE
         transform.Rotate(0, yaw, 0);
@@ -119,6 +135,11 @@ public class Gravity : MonoBehaviour
             return;
         }
 
+        if (m_isInPlanetTransition)
+        {
+            m_isInPlanetTransition = false;
+        }
+
         m_jumpCooldownOver = false;
 
         StopCoroutine(JumpCoolDown());
@@ -128,7 +149,7 @@ public class Gravity : MonoBehaviour
     }
     private void UpdateHead()
     {
-        if (m_isInPlanetTransition)
+        if (m_isInTransitionInitiationPhase)
         {
             return;
         }
@@ -148,6 +169,7 @@ public class Gravity : MonoBehaviour
     private IEnumerator PlanetTransition()
     {
         m_isInPlanetTransition = true;
+        m_isInTransitionInitiationPhase = true;
 
         float begin = Time.time;
         while (begin - Time.time > -0.05)
@@ -155,7 +177,7 @@ public class Gravity : MonoBehaviour
             m_head.transform.LookAt(m_planetTransitionHit); 
             yield return new WaitForSeconds(0.01f);
         }
-        m_isInPlanetTransition = false;
+        m_isInTransitionInitiationPhase = false;
 
         yield return 0;
     }
