@@ -46,7 +46,7 @@ public class FPS_Controller : MonoBehaviour
     private void Update()
     {
         UpdateShooting();
-        UpdatePlanedSelection();
+        UpdatePlanetSelection();
     }
     private void FixedUpdate()
     {
@@ -76,7 +76,7 @@ public class FPS_Controller : MonoBehaviour
 
         m_rigidBody.AddForce(m_upVector * gravity);
     }
-    private void UpdatePlanedSelection()
+    private void UpdatePlanetSelection()
     {
         if (Input.GetButtonDown("Fire2"))
         {

@@ -26,7 +26,6 @@ public class AutoGravity : MonoBehaviour
         {
             if (!m_homeActive && p == m_homePlanet)
             {
-                print("Ignore");
                 continue;
             }
             m_gravity += (p.transform.position - transform.position) /
