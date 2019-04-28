@@ -88,7 +88,7 @@ public class FPS_Controller : MonoBehaviour
 
             if (hitInfo.transform != null && hitInfo.transform.root != currentPlanet.transform.root)
             {
-                print("Switching to " + hitInfo.transform.root.name);
+                //print("Switching to " + hitInfo.transform.root.name);
                 currentPlanet = hitInfo.transform.root.GetComponentInChildren<Planet>();
                 m_planetTransform = currentPlanet.transform.root;
 

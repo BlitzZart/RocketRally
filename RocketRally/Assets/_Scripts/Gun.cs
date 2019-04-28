@@ -4,11 +4,17 @@ using UnityEngine;
 
 public class Gun : MonoBehaviour
 {
+    private FPS_Controller m_owner;
     private bool m_ready = true;
     private float m_cooldown = 0.2f;
 
     public Rocket rocketPrefab;
     public Transform muzzle;
+
+    private void Start()
+    {
+        m_owner = transform.root.GetComponentInChildren<FPS_Controller>();
+    }
 
     public void Fire()
     {
@@ -20,7 +26,8 @@ public class Gun : MonoBehaviour
         StopCoroutine(Cooldown());
         StartCoroutine(Cooldown());
 
-        Instantiate(rocketPrefab, muzzle.position, muzzle.rotation).Fire(transform.root);
+        Rocket r = Instantiate(rocketPrefab, muzzle.position, muzzle.rotation);
+        r.Fire(m_owner);
     }
 
     private IEnumerator Cooldown()
