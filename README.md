@@ -48,6 +48,12 @@ Then the sound comes back slowly first only as a abstract slow heartbeat then a 
 ### 02_p01 - Fear of small roomes
 You stand up after the fall. The first time you see the geometry of architecture. Still abstract. Dark nearly black surfaces with bright edges reveal the geometry of the room. It's connected to other rooms, halls, and corridors. While roaming around you enter a big room with a couple of windows a balkony (or galleria) at its end. On the balkony you find a crate but you cannot open it. You have to go back. On the way to the door you see a small glowing red stone lying around. You approach it slowly **[Running disabled]** when you touch it **[Intaract (force player to look at door?)]** the door in front of you immediately disappears. When you go back all windows and the balkony are gone **[Running still disabled]**. Each time you move the room shrinks a little and movement gets slower **[Slow down walking speed]**. Sound gets quiter as you keep moving - becomes squeaky with reverb. A timpano is hit and suddenly you can watch the room expand fast to about 5x7 meters. Heart beats, everything becomes a little brighter. You see a door to the right and that red glowing stone in the left corner. If you go into the door and walk a short narrow corridor you just end up in the same room again **[Loop (Iterum)]**. Eventually you have to approach the stone. The room becomes smaller again when you do so. A long and rather wide and high corridor streaches out in front of you. This is the only path right now. When you start walking through the walls (and maybe ceilling) come closer and closer. Also the wall behind you is following you **[Squeeze (Iterum)]**. It is getting so thight you have to crawl. At he end you open a tiny hatch and fall through. What you find there is the splip again. 
 
+---
+---
+
+# Gravy Stealth - Stealth Puzzle Gravity Game
+
+
 
 ---
 ---
