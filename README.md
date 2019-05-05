@@ -7,10 +7,11 @@ The levels or puzzles mechanics reffer to the current phobia. This can be extend
 Optional the player can play the whole game again in some kind of fast forward mode and the explaination of the current phobia.
 
 ## Setting
-Surreal, dream like, mostly gloomy.
+Surreal, dream like, mostly gloomy, endless nightmare.
 
 ## Style, Appearence
-Simplyfied, non-realistic, dark, outline shader, black with white edges. 
+Simplyfied, non-realistic, dark, outline shader, black with white edges.
+Some kind of abstract motionblur could work well to generate dream like effects.
 
 ## Fears and Phobias
 * fear of small rooms       - claustrophobia
@@ -34,7 +35,11 @@ optional
 * fear of water             -
 * fear of the number 4      - https://en.m.wikipedia.org/wiki/Tetraphobia
 
-## Mechanics
+## Mechanics of Fears
+Generally it is about exposing yourselfe. This means that one has to fight the fear and don't run away if possible. Usualy that means to do the most counter intuitive possible. When the noise becomes unbearable and the visuals are totally distorted or dark the player is on the right way.
+
+### 01_START - Fear of small roomes 
+Everything is bright. {Movement is disabled}. You hear nothing but your own breath. But that also fades away soon - silece. When the breath stops the environment gets visible. Still bright and minimalistic. {Movement is enabled}. When you rotate the camera 90° to the right, on a nearly invisible wall you see a dark, nearly black, door. As you approach the door everything gets darker and darker. When you step into it, the environment is as dark as the door was from the beginning. {No way back}. 
 
 
 ---
