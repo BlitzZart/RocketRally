@@ -6,7 +6,13 @@ The levels or puzzles mechanics reffer to the current phobia. This can be extend
 
 Optional the player can play the whole game again in some kind of fast forward mode and the explaination of the current phobia.
 
-# Fears and Phobias
+## Setting
+Surreal, dream like, mostly gloomy.
+
+## Style, Appearence
+Simplyfied, non-realistic, dark, outline shader, black with white edges. 
+
+## Fears and Phobias
 * fear of small rooms       - claustrophobia
 * fear of large/empty rooms -
 * fear of open places       - https://en.m.wikipedia.org/wiki/Agoraphobia
@@ -18,6 +24,7 @@ Optional the player can play the whole game again in some kind of fast forward m
 * fear of everything or
   fear of an unknown cause  - https://en.m.wikipedia.org/wiki/Panphobia
 optional
+---
 * fear of the color black   - https://en.m.wikipedia.org/wiki/Melanophobia
 * fear of colors            - https://en.m.wikipedia.org/wiki/Chromophobia_(fear)
 * fear of sharp/pointed objs- https://en.m.wikipedia.org/wiki/Aichmophobia
@@ -27,9 +34,11 @@ optional
 * fear of water             -
 * fear of the number 4      - https://en.m.wikipedia.org/wiki/Tetraphobia
 
-##
+## Mechanics
 
 
+---
+---
 # RocketRally - Multiplayer Versus Game
 ## Key features
 ### Online multiplayer
