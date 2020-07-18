@@ -13,6 +13,8 @@ public class FPS_Controller : MonoBehaviour
     private Camera m_head;
     private Gun m_gun;
 
+    private Quaternion m_headRotationBeforeTransition;
+
     [SerializeField]
     private Vector3 m_upVector;
 
@@ -46,10 +48,11 @@ public class FPS_Controller : MonoBehaviour
     private void Update()
     {
         UpdateShooting();
-        UpdatePlanetSelection();
+
     }
     private void FixedUpdate()
     {
+        UpdatePlanetSelection();
         UpdateGravity();
         UpdateHead();
         UpdateMovement();
@@ -88,6 +91,8 @@ public class FPS_Controller : MonoBehaviour
 
             if (hitInfo.transform != null && hitInfo.transform.root != currentPlanet.transform.root)
             {
+                m_headRotationBeforeTransition = m_head.transform.rotation;
+
                 //print("Switching to " + hitInfo.transform.root.name);
                 currentPlanet = hitInfo.transform.root.GetComponentInChildren<Planet>();
                 m_planetTransform = currentPlanet.transform.root;
@@ -151,6 +156,7 @@ public class FPS_Controller : MonoBehaviour
     {
         if (m_isInTransitionInitiationPhase)
         {
+            m_head.transform.rotation = m_headRotationBeforeTransition;
             return;
         }
 
@@ -168,17 +174,9 @@ public class FPS_Controller : MonoBehaviour
     }
     private IEnumerator PlanetTransition()
     {
-        m_isInPlanetTransition = true;
         m_isInTransitionInitiationPhase = true;
-
-        float begin = Time.time;
-        while (begin - Time.time > -0.05)
-        {
-            m_head.transform.LookAt(m_planetTransitionHit); 
-            yield return new WaitForSeconds(0.01f);
-        }
+        //yield return 0;
+        yield return new WaitForSeconds(0.1f);
         m_isInTransitionInitiationPhase = false;
-
-        yield return 0;
     }
 }
