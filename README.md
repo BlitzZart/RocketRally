@@ -1,8 +1,5 @@
 # Gravy Stealth - Stealth Puzzle Gravity Game
 
-
-
----
 ---
 # RocketRally - Multiplayer Versus Game
 ## Key features
@@ -18,3 +15,13 @@
 #### Two on two
 #### Three on three
 #### and 3 party mode (e.g. 2 on 2 on 2)
+
+---
+# Singleplayer
+## Twitch skill puzzle game
+## Angry Birds
+
+## Progression
+### Walking: labyrint on very big planet
+#### Here players make a full circle - first hint that planets are round
+#### 
