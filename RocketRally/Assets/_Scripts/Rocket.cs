@@ -35,11 +35,11 @@ public class Rocket : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         // ignore your master
-        if (other.transform == m_owner)
+        if (other.transform == m_owner.transform)
         {
             return;
         }
-
+        print("COL " + other.name + " | Owner = " + m_owner.name);
         Detonate();
     }
 
