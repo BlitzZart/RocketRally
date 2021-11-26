@@ -1,33 +1,32 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 
 public class FPS_Controller : MonoBehaviour
 {
-    // planet transition
+    // Planet transition
     public LayerMask planetOnlyMask;
     public Planet currentPlanet;
-    private bool m_isInPlanetTransition = false;
-
-    private Rigidbody m_rigidBody;
     private Transform m_planetTransform;
-    private Camera m_head;
-    private Gun m_gun;
-
-    private Quaternion m_headRotationBeforeTransition;
-
-    [SerializeField]
-    private Vector3 m_upVector;
-
-    [SerializeField]
-    private Transform m_body;
-    private Feet m_feet;
-
+    private bool m_transitionTriggered = false;
+    private bool m_isInPlanetTransition = false;
     private bool m_isInTransitionInitiationPhase = false;
     private Vector3 m_planetTransitionHit;
 
+    // Player body
+    [SerializeField] private Transform m_body;
+    private Rigidbody m_rigidBody;
+    private Camera m_head;
+    private Feet m_feet;
+    private Gun m_gun;
+    private Vector3 m_headPosition;
+    private Vector3 m_upVector;
+
+
     // Movement
-    private float m_walkSpeed = 7;
-    private float m_runSpeed = 13;
+    [SerializeField] float m_mouseSensitivity = 5;
+    [SerializeField] private float m_walkSpeed = 7;
+    [SerializeField] private float m_runSpeed = 13;
 
     // Jump
     private float m_jumpCooldown = 0.1f;
@@ -43,13 +42,31 @@ public class FPS_Controller : MonoBehaviour
         m_rigidBody = GetComponent<Rigidbody>();
         m_gun = GetComponentInChildren<Gun>();
 
+        m_headPosition = m_head.transform.localPosition;
+
         m_planetTransform = currentPlanet.transform;
     }
     private void Update()
     {
-        UpdateShooting();
-
+        UpdateInput();
     }
+
+    private void UpdateInput()
+    {
+        // shooting
+        if (Input.GetAxis("Fire1") > 0)
+        {
+            m_gun.Fire();
+        }
+
+        // planet selection
+        if (Input.GetButtonDown("Fire2"))
+        {
+            // decouppling input from fixedUpdate
+            m_transitionTriggered = true;
+        }
+    }
+
     private void FixedUpdate()
     {
         UpdatePlanetSelection();
@@ -59,13 +76,6 @@ public class FPS_Controller : MonoBehaviour
         UpdateJump();
     }
 
-    private void UpdateShooting()
-    {
-        if (Input.GetAxis("Fire1") > 0)
-        {
-            m_gun.Fire();
-        }
-    }
     private void UpdateGravity()
     {
         m_upVector = (transform.position - m_planetTransform.position).normalized;
@@ -81,8 +91,10 @@ public class FPS_Controller : MonoBehaviour
     }
     private void UpdatePlanetSelection()
     {
-        if (Input.GetButtonDown("Fire2"))
+        if (m_transitionTriggered)
         {
+            m_transitionTriggered = false;
+            print("Clicked");
             RaycastHit hitInfo;
             Ray ray = new Ray(m_head.transform.position, m_head.transform.forward);
             Physics.Raycast(ray, out hitInfo, 1000, planetOnlyMask);
@@ -91,13 +103,13 @@ public class FPS_Controller : MonoBehaviour
 
             if (hitInfo.transform != null && hitInfo.transform.root != currentPlanet.transform.root)
             {
-                m_headRotationBeforeTransition = m_head.transform.rotation;
+                m_head.transform.SetParent(null);
 
-                //print("Switching to " + hitInfo.transform.root.name);
+                print("Switching to " + hitInfo.transform.root.name);
                 currentPlanet = hitInfo.transform.root.GetComponentInChildren<Planet>();
                 m_planetTransform = currentPlanet.transform.root;
-
                 m_planetTransitionHit = hitInfo.point;
+
                 StartCoroutine(PlanetTransition());
             }
 
@@ -108,20 +120,13 @@ public class FPS_Controller : MonoBehaviour
     private void UpdateMovement()
     {
         Vector3 moveDirection = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
-        float yaw = Input.GetAxis("Mouse X");
+        float yaw = Input.GetAxis("Mouse X") * m_mouseSensitivity;
 
         float speed = m_walkSpeed;
         if (Input.GetAxis("Run") > 0) { speed = m_runSpeed; }
 
-        // use forces to move
-        //if (!m_feet.OnGround)
-        //{
-        //    speed *= 0.5f;
-        //}
-
         // MOVE
         transform.Translate(moveDirection * speed * Time.fixedDeltaTime);
-        //m_rigidBody.MovePosition(moveDirection * speed * Time.fixedDeltaTime);
 
         // ROTATE
         transform.Rotate(0, yaw, 0);
@@ -156,11 +161,10 @@ public class FPS_Controller : MonoBehaviour
     {
         if (m_isInTransitionInitiationPhase)
         {
-            m_head.transform.rotation = m_headRotationBeforeTransition;
             return;
         }
 
-        float headPitch = -Input.GetAxis("Mouse Y");
+        float headPitch = -Input.GetAxis("Mouse Y") * m_mouseSensitivity;
         m_head.transform.Rotate(headPitch, 0, 0);
 
         m_head.transform.localRotation = Quaternion.Slerp(m_head.transform.localRotation, Quaternion.Euler(m_head.transform.localRotation.eulerAngles.x, 0, 0), 0.01f * Time.fixedTime);
@@ -174,9 +178,14 @@ public class FPS_Controller : MonoBehaviour
     }
     private IEnumerator PlanetTransition()
     {
+        m_isInPlanetTransition = true;
+
         m_isInTransitionInitiationPhase = true;
-        //yield return 0;
-        yield return new WaitForSeconds(0.1f);
+        yield return 0;      
+
+        m_head.transform.SetParent(m_body);
+        m_head.transform.localPosition = m_headPosition;
+
         m_isInTransitionInitiationPhase = false;
     }
 }

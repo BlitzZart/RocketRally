@@ -15,4 +15,11 @@ public class Planet : MonoBehaviour
         mass = m_massBase * transform.localScale.x;
     }
 
+    private void Remesh()
+    {
+
+    }
+
+
+
 }

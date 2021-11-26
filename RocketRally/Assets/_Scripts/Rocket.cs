@@ -39,7 +39,7 @@ public class Rocket : MonoBehaviour
         {
             return;
         }
-        print("COL " + other.name + " | Owner = " + m_owner.name);
+        // print("Col. - Other: " + other.name + " | Owner:" + m_owner.name);
         Detonate();
     }
 
