@@ -11,7 +11,28 @@ public class Rocket : MonoBehaviour
     private Rigidbody m_body;
     private float m_force = 75.0f;
     private float m_maxLifetime = 20.0f;
-    
+
+
+    private void Awake()
+    {
+        Fire();
+    }
+
+    public void Fire()
+    {
+        AutoGravity ag = GetComponent<AutoGravity>();
+        if (ag != null)
+        {
+            ag.Activate();
+        }
+
+        m_fired = true;
+        m_body = GetComponent<Rigidbody>();
+
+        m_body.AddForce(transform.up * m_force, ForceMode.Impulse);
+
+        StartCoroutine(AutoDetonate());
+    }
 
     public void Fire(FPS_Controller owner)
     {
@@ -35,7 +56,7 @@ public class Rocket : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         // ignore your master
-        if (other.transform == m_owner.transform)
+        if (m_owner != null && other.transform == m_owner.transform)
         {
             return;
         }

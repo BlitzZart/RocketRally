@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 public class Gun : MonoBehaviour
@@ -27,7 +28,22 @@ public class Gun : MonoBehaviour
         StartCoroutine(Cooldown());
 
         Rocket r = Instantiate(rocketPrefab, muzzle.position, muzzle.rotation);
-        r.Fire(m_owner);
+
+        FireServer();
+
+        //NetworkObject no = r.GetComponent<NetworkObject>();
+        //no.Spawn();
+
+        //r.Fire(m_owner);
+    }
+
+    [ServerRpc]
+    public void FireServer()
+    {
+        Rocket r = Instantiate(rocketPrefab, muzzle.position, muzzle.rotation);
+
+        NetworkObject no = r.GetComponent<NetworkObject>();
+        no.Spawn();
     }
 
     private IEnumerator Cooldown()

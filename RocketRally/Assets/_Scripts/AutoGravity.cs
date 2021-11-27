@@ -44,7 +44,7 @@ public class AutoGravity : MonoBehaviour
         m_homeActive = true;
     }
 
-    public void Activate(Planet homePlanet = null, float delayHomePlanet = 0)
+    public void Activate(Planet homePlanet = null, float delayHomePlanet = 0.5f)
     {
         if (homePlanet != null && delayHomePlanet > 0)
         {
