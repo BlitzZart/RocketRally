@@ -134,7 +134,9 @@ public class ConnectionModeScript : MonoBehaviour
                 StartServer();
             }
         }
-        Destroy(m_menuCamera);
+
+        // TODO: only if headless?
+        //Destroy(m_menuCamera);
     }
 
     private void StartServer()
@@ -220,6 +222,7 @@ public class ConnectionModeScript : MonoBehaviour
                 StartClient();
             }
         }
+
         Destroy(m_menuCamera);
     }
 

@@ -1,21 +1,18 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
 public class Gun : MonoBehaviour
 {
-    private FPS_Controller m_owner;
     private bool m_ready = true;
     private float m_cooldown = 0.2f;
 
-    public Rocket rocketPrefab;
+
+    public Rocket m_gravityRocketPrefab;
+    public Rocket m_stdRocketPrefab;
+
     public Transform muzzle;
 
-    private void Start()
-    {
-        m_owner = transform.root.GetComponentInChildren<FPS_Controller>();
-    }
 
     public void Fire()
     {
@@ -27,23 +24,16 @@ public class Gun : MonoBehaviour
         StopCoroutine(Cooldown());
         StartCoroutine(Cooldown());
 
-        Rocket r = Instantiate(rocketPrefab, muzzle.position, muzzle.rotation);
+        //Rocket r = Instantiate(rocketPrefab, muzzle.position, muzzle.rotation);
+        //r.Fire(m_netPlayer.FpsCtrl.RigidBody.velocity, 0);
 
-        FireServer();
-
-        //NetworkObject no = r.GetComponent<NetworkObject>();
-        //no.Spawn();
+        NW_PlayerScript.Instance.FireNetworkedRocket(
+            muzzle.position,
+            muzzle.rotation.eulerAngles,
+            NW_PlayerScript.Instance.FpsCtrl.RigidBody.velocity,
+            NetworkManager.Singleton.LocalClientId);
 
         //r.Fire(m_owner);
-    }
-
-    [ServerRpc]
-    public void FireServer()
-    {
-        Rocket r = Instantiate(rocketPrefab, muzzle.position, muzzle.rotation);
-
-        NetworkObject no = r.GetComponent<NetworkObject>();
-        no.Spawn();
     }
 
     private IEnumerator Cooldown()

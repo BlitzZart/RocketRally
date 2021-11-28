@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
 public class FPS_Controller : MonoBehaviour
 {
+    private bool m_initialized = false;
+
     // Planet transition
     public LayerMask planetOnlyMask;
     public Planet currentPlanet;
@@ -11,12 +14,14 @@ public class FPS_Controller : MonoBehaviour
     private bool m_transitionTriggered = false;
     private bool m_isInPlanetTransition = false;
     private bool m_isInTransitionInitiationPhase = false;
-    private Vector3 m_planetTransitionHit;
 
     // Player body
     [SerializeField] private Transform m_body;
+    public Rigidbody RigidBody { get => m_rigidBody; }
     private Rigidbody m_rigidBody;
     public Camera Head { get => m_head; }
+
+
     private Camera m_head;
     private Feet m_feet;
     private Gun m_gun;
@@ -34,28 +39,20 @@ public class FPS_Controller : MonoBehaviour
     private bool m_jumpCooldownOver = true;
     private float m_jumpForce = 10.0f;
 
+    private Health m_health;
+    public Health Health { get => m_health; }
 
     private void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-
-        m_head = GetComponentInChildren<Camera>();
-        m_feet = GetComponentInChildren<Feet>();
-        m_rigidBody = GetComponent<Rigidbody>();
-        m_gun = GetComponentInChildren<Gun>();
-
-        m_headPosition = m_head.transform.localPosition;
-
-        if (currentPlanet == null)
-        {
-            currentPlanet = GameObject.Find("Earth").GetComponent<Planet>();
-        }
-
-        m_planetTransform = currentPlanet.transform;
+        StartCoroutine(Initialize());
     }
 
     private void Update()
     {
+        if (!m_initialized)
+        {
+            return;
+        }
         UpdateInput();
         UpdateHead();
 
@@ -64,6 +61,11 @@ public class FPS_Controller : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (!m_initialized)
+        {
+            return;
+        }
+
         UpdatePlanetSelection();
         UpdateGravity();
 
@@ -71,8 +73,38 @@ public class FPS_Controller : MonoBehaviour
         UpdateJump();
     }
 
+    private IEnumerator Initialize()
+    {
+        yield return new WaitUntil(() => NW_PlayerScript.Instance != null);
+
+        if (NW_PlayerScript.Instance.Initialized && 
+            NW_PlayerScript.Instance.IsLocal)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+
+            m_head = GetComponentInChildren<Camera>();
+            m_feet = GetComponentInChildren<Feet>();
+            m_rigidBody = GetComponent<Rigidbody>();
+            m_gun = GetComponentInChildren<Gun>();
+            m_health = GetComponent<Health>();
+
+            NW_PlayerScript.Instance.SetFpsController(this);
+
+            m_headPosition = m_head.transform.localPosition;
+
+            if (currentPlanet == null)
+            {
+                currentPlanet = GameObject.Find("Earth").GetComponent<Planet>();
+            }
+            m_planetTransform = currentPlanet.transform;
+
+            m_initialized = true;
+        }
+    }
+
     private void UpdateInput()
     {
+
         // shooting
         if (Input.GetAxis("Fire1") > 0)
         {
@@ -86,6 +118,8 @@ public class FPS_Controller : MonoBehaviour
             m_transitionTriggered = true;
         }
     }
+
+
 
     private void UpdateGravity()
     {
@@ -118,7 +152,6 @@ public class FPS_Controller : MonoBehaviour
                 //print("Switching to " + hitInfo.transform.root.name);
                 currentPlanet = hitInfo.transform.root.GetComponentInChildren<Planet>();
                 m_planetTransform = currentPlanet.transform.root;
-                m_planetTransitionHit = hitInfo.point;
 
                 StartCoroutine(PlanetTransition());
             }
