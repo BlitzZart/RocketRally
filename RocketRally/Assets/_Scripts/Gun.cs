@@ -24,8 +24,8 @@ public class Gun : MonoBehaviour
         StopCoroutine(Cooldown());
         StartCoroutine(Cooldown());
 
-        //Rocket r = Instantiate(rocketPrefab, muzzle.position, muzzle.rotation);
-        //r.Fire(m_netPlayer.FpsCtrl.RigidBody.velocity, 0);
+        Rocket r = Instantiate(m_stdRocketPrefab, muzzle.position, muzzle.rotation);
+        r.Fire(NW_PlayerScript.Instance.FpsCtrl.RigidBody.velocity, NetworkManager.Singleton.LocalClientId, true);
 
         NW_PlayerScript.Instance.FireNetworkedRocket(
             muzzle.position,

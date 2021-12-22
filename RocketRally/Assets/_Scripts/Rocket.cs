@@ -1,9 +1,13 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
 public class Rocket : MonoBehaviour
 {
+    public delegate void OwnerIdDelegate(ulong ownerId);
+    public static event OwnerIdDelegate Spawned;
+
     private Rigidbody m_body;
     private float m_force = 75.0f;
     private float m_maxLifetime = 20.0f;
@@ -17,9 +21,23 @@ public class Rocket : MonoBehaviour
     [SerializeField]
     private float m_maxRange = 10;
 
+    // used to prespawn locally and "exchange" with net spawned later
+    private bool m_localInstantiated = false;
+    private ulong m_ownerId;
+
     private void Awake()
     {
         m_trail = Instantiate(m_trailPrefab, transform.position, Quaternion.identity).transform;
+
+
+
+        if (!m_localInstantiated)
+        {
+            if (Spawned != null)
+            {
+                Spawned(NetworkManager.Singleton.LocalClientId);
+            }
+        }
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -38,7 +56,15 @@ public class Rocket : MonoBehaviour
         m_trail.position = transform.position;
     }
 
-    public void Fire(Vector3 initVelocity, ulong ownerId)
+    private void OnDestroy()
+    {
+        if (m_localInstantiated)
+        {
+            Spawned -= OnSpawned;
+        }
+    }
+
+    public void Fire(Vector3 initVelocity, ulong ownerId, bool locallyInstantiated = false)
     {
         print("FIRE");
         //if (ownerId == NetworkManager.Singleton.LocalClientId)
@@ -60,8 +86,29 @@ public class Rocket : MonoBehaviour
 
         //m_trail.transform.localScale = Vector3.one;
 
-        StartCoroutine(Arm());
+        // don't arm if spawned locally
+        // will be destroyed when net rocked was spawned and found
+        m_localInstantiated = locallyInstantiated;
+        if (m_localInstantiated)
+        {
+            Spawned += OnSpawned;
+            m_ownerId = ownerId;
+        }
+        else
+        {
+            StartCoroutine(Arm());
+        }
+
         StartCoroutine(AutoDetonate());
+    }
+
+    private void OnSpawned(ulong ownerId)
+    {
+        if (ownerId == m_ownerId)
+        {
+            Destroy(m_trail.gameObject);
+            Destroy(gameObject);
+        }
     }
 
     private void Detonate(Vector3 pos)

@@ -70,6 +70,18 @@ public class NW_PlayerScript : NetworkBehaviour
     private IEnumerator Initialize()
     {
         yield return new WaitUntil(() => NetworkManager.Singleton != null);
+
+
+
+        NetworkObject netObject = GetComponent<NetworkObject>();
+        if (NetworkManager.Singleton.IsServer || netObject.IsLocalPlayer)
+        {
+            m_gun = GetComponentInChildren<Gun>();
+            m_netObj = netObject;
+        }
+        m_initialized = true;
+
+
         m_instance = this;
         Debug.Log("NetworkManager initialized");
 

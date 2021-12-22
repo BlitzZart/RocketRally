@@ -76,9 +76,9 @@ public class FPS_Controller : MonoBehaviour
     private IEnumerator Initialize()
     {
         yield return new WaitUntil(() => NW_PlayerScript.Instance != null);
+        yield return new WaitUntil(() => NW_PlayerScript.Instance.Initialized);
 
-        if (NW_PlayerScript.Instance.Initialized && 
-            NW_PlayerScript.Instance.IsLocal)
+        if (NW_PlayerScript.Instance.IsLocal)
         {
             Cursor.lockState = CursorLockMode.Locked;
 
