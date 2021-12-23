@@ -5,9 +5,6 @@ using UnityEngine;
 
 public class Rocket : MonoBehaviour
 {
-    public delegate void OwnerIdDelegate(ulong ownerId);
-    public static event OwnerIdDelegate Spawned;
-
     private Rigidbody m_body;
     private float m_force = 75.0f;
     private float m_maxLifetime = 20.0f;
@@ -21,57 +18,66 @@ public class Rocket : MonoBehaviour
     [SerializeField]
     private float m_maxRange = 10;
 
-    // used to prespawn locally and "exchange" with net spawned later
+    // used to "sync" local and server rockets
     private bool m_localInstantiated = false;
-    private ulong m_ownerId;
+    private NetworkVariable<ulong> m_ownerId = new NetworkVariable<ulong>();
+    private bool m_deactivatedNetRocketVis = false;
 
     private void Awake()
     {
         m_trail = Instantiate(m_trailPrefab, transform.position, Quaternion.identity).transform;
-
-
-
-        if (!m_localInstantiated)
-        {
-            if (Spawned != null)
-            {
-                Spawned(NetworkManager.Singleton.LocalClientId);
-            }
-        }
     }
 
     private void OnCollisionEnter(Collision collision)
     {
+        //print("Rocket collided with: " + collision.gameObject.name);
         // dont detonate "own" if not armed and we hit ourselfes
-        if (!m_isArmed && collision.gameObject == NW_PlayerScript.Instance.FpsCtrl.gameObject)
+        // if FpsCtrl is set, it's us
+        if (!m_isArmed)
         {
-            return;
+            NetworkObject no = collision.gameObject.GetComponent<NetworkObject>();
+            if (no)
+            {
+                if (no.NetworkObjectId == m_ownerId.Value)
+                {
+                    return;
+                }
+            }
+
         }
+
 
         Detonate(transform.position);
     }
 
     private void Update()
     {
-        m_trail.position = transform.position;
-    }
-
-    private void OnDestroy()
-    {
-        if (m_localInstantiated)
+        if (!m_deactivatedNetRocketVis &&
+            !m_localInstantiated && 
+            !NetworkManager.Singleton.IsServer)
         {
-            Spawned -= OnSpawned;
+            m_deactivatedNetRocketVis = true;
+
+            Renderer r = GetComponent<Renderer>();
+            if (r)
+            {
+                r.enabled = false;
+            }
+
+            Destroy(m_trail.gameObject);
         }
+        else if (m_deactivatedNetRocketVis)
+        {
+            return;
+        }
+
+
+        m_trail.position = transform.position;
     }
 
     public void Fire(Vector3 initVelocity, ulong ownerId, bool locallyInstantiated = false)
     {
-        print("FIRE");
-        //if (ownerId == NetworkManager.Singleton.LocalClientId)
-        //{
-        //    gameObject.SetActive(false);
-        //}
-
+        m_localInstantiated = locallyInstantiated;
         AutoGravity ag = GetComponent<AutoGravity>();
         if (ag != null)
         {
@@ -79,36 +85,14 @@ public class Rocket : MonoBehaviour
         }
 
         m_body = GetComponent<Rigidbody>();
-        //print("Player vel.: " + m_netPlayer.FpsCtrl.RigidBody.velocity.magnitude);
         m_body.velocity = initVelocity;
         m_body.AddForce(transform.up * m_force, ForceMode.Impulse);
 
+        m_ownerId.Value = ownerId;
 
-        //m_trail.transform.localScale = Vector3.one;
-
-        // don't arm if spawned locally
-        // will be destroyed when net rocked was spawned and found
-        m_localInstantiated = locallyInstantiated;
-        if (m_localInstantiated)
-        {
-            Spawned += OnSpawned;
-            m_ownerId = ownerId;
-        }
-        else
-        {
-            StartCoroutine(Arm());
-        }
+        StartCoroutine(Arm());
 
         StartCoroutine(AutoDetonate());
-    }
-
-    private void OnSpawned(ulong ownerId)
-    {
-        if (ownerId == m_ownerId)
-        {
-            Destroy(m_trail.gameObject);
-            Destroy(gameObject);
-        }
     }
 
     private void Detonate(Vector3 pos)
@@ -117,13 +101,18 @@ public class Rocket : MonoBehaviour
 
         NW_PlayerScript.Instance.Detonate(pos, m_maxRange, m_maxDamage);
 
-        Destroy(m_trail.gameObject, 2.0f);
+        if (m_trail)
+        {
+            Destroy(m_trail.gameObject, 2.0f);
+        }
+
         Destroy(gameObject);
     }
 
     private IEnumerator Arm()
     {
-        yield return new WaitForSeconds(0.02f); // arm delayed
+        yield return 0;// new WaitForSeconds(0.02f); // arm delayed 
+
 
         m_isArmed = true;
     }

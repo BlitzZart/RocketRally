@@ -114,7 +114,7 @@ public class NW_PlayerScript : NetworkBehaviour
     [ServerRpc]
     public void FireServerRpc(Vector3 pos, Vector3 rot, Vector3 initVelocity, ulong ownerId)
     {
-        print(System.Reflection.MethodBase.GetCurrentMethod().Name);
+        //print(System.Reflection.MethodBase.GetCurrentMethod().Name);
         Rocket r = Instantiate(m_gun.m_stdRocketPrefab, pos, Quaternion.Euler(rot));
         r.Fire(initVelocity, ownerId);
         NetworkObject no = r.GetComponent<NetworkObject>();
@@ -126,6 +126,10 @@ public class NW_PlayerScript : NetworkBehaviour
         if (NetworkManager.Singleton.IsServer)
         {
             DetonateClientRpc(pos, maxRange, maxDamage);
+            // with zero damage and zero range to visualize on server
+            // pointless on headless sever!
+            // TODO: remove in final version
+            m_detonator.SpawnDetonation(pos, 0, 0);
         }
         else if (m_netObj.IsLocalPlayer)
         {

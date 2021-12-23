@@ -13,6 +13,10 @@ public class Detonator : MonoBehaviour
         GameObject go = Instantiate(m_explosionPrefab, pos, Quaternion.identity);
         Destroy(go, go.GetComponent<ParticleSystem>().main.duration);
 
-        Detonated?.Invoke(pos, maxDamage, maxRange);
+        if (Detonated != null)
+        {
+            Detonated?.Invoke(pos, maxDamage, maxRange);
+        }
+
     }
 }

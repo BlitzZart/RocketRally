@@ -28,7 +28,7 @@ public class Health : MonoBehaviour
             if (dist < rng)
             {
                 float dmgWheight = (rng / dist) / rng;
-                print("range: " + rng + " dist: " + dist + " % " + dmgWheight);
+                //print("range: " + rng + " dist: " + dist + " % " + dmgWheight);
                 Damage(dmg * dmgWheight);
             }
         };
@@ -49,6 +49,10 @@ public class Health : MonoBehaviour
 
     private void HealthChanged()
     {
-        OnHealthChanged.Invoke(m_currentHp);
+        if (OnHealthChanged != null)
+        {
+            OnHealthChanged.Invoke(m_currentHp);
+        }
+
     }
 }

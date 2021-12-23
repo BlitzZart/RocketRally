@@ -25,12 +25,23 @@ public class Gun : MonoBehaviour
         StartCoroutine(Cooldown());
 
         Rocket r = Instantiate(m_stdRocketPrefab, muzzle.position, muzzle.rotation);
-        r.Fire(NW_PlayerScript.Instance.FpsCtrl.RigidBody.velocity, NetworkManager.Singleton.LocalClientId, true);
+        Vector3 vel = NW_PlayerScript.Instance.FpsCtrl.RigidBody.velocity;
+
+        print("VEL " + vel.magnitude);
+        // only use start vel of player if the player moves forward
+        float dot = Vector3.Dot(vel.normalized, transform.forward);
+        print("DOT = " + dot);
+        if (dot < 0.1f)
+        {
+            print("DOT < " + dot);
+            vel = -vel;
+        }
+        r.Fire(vel, NetworkManager.Singleton.LocalClientId, true);
 
         NW_PlayerScript.Instance.FireNetworkedRocket(
             muzzle.position,
             muzzle.rotation.eulerAngles,
-            NW_PlayerScript.Instance.FpsCtrl.RigidBody.velocity,
+            vel,
             NetworkManager.Singleton.LocalClientId);
 
         //r.Fire(m_owner);
