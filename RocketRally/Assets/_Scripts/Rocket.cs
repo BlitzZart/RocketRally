@@ -7,7 +7,7 @@ public class Rocket : MonoBehaviour
 {
     private Rigidbody m_body;
     private float m_force = 75.0f;
-    private float m_maxLifetime = 20.0f;
+    private float m_maxLifetime = 3.0f;
     [SerializeField]
     private GameObject m_trailPrefab;
     private Transform m_trail;
@@ -21,11 +21,17 @@ public class Rocket : MonoBehaviour
     // used to "sync" local and server rockets
     private bool m_localInstantiated = false;
     private NetworkVariable<ulong> m_ownerId = new NetworkVariable<ulong>();
-    private bool m_deactivatedNetRocketVis = false;
+    private bool m_deactivatedNetRocket = false;
 
     private void Awake()
     {
         m_trail = Instantiate(m_trailPrefab, transform.position, Quaternion.identity).transform;
+
+        // take care of stray rockets
+        //if (!NetworkManager.Singleton.IsServer)
+        //{
+        //    StartCoroutine(DestroyOldRocket());
+        //}
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -52,11 +58,11 @@ public class Rocket : MonoBehaviour
 
     private void Update()
     {
-        if (!m_deactivatedNetRocketVis &&
+        if (!m_deactivatedNetRocket &&
             !m_localInstantiated && 
             !NetworkManager.Singleton.IsServer)
         {
-            m_deactivatedNetRocketVis = true;
+            m_deactivatedNetRocket = true;
 
             Renderer r = GetComponent<Renderer>();
             if (r)
@@ -64,9 +70,15 @@ public class Rocket : MonoBehaviour
                 r.enabled = false;
             }
 
+            Collider c = GetComponent<Collider>();
+            if (c)
+            {
+                c.enabled = false;
+            }
+
             Destroy(m_trail.gameObject);
         }
-        else if (m_deactivatedNetRocketVis)
+        else if (m_deactivatedNetRocket)
         {
             return;
         }
@@ -116,9 +128,24 @@ public class Rocket : MonoBehaviour
         m_isArmed = true;
     }
 
+    private IEnumerator DestroyOldRocket()
+    {
+        yield return new WaitForSeconds(m_maxLifetime + 1.0f);
+
+        StartCoroutine(AutoDetonate());
+        if (m_trail)
+        {
+            Destroy(m_trail.gameObject);
+        }
+
+        Destroy(gameObject);
+    }
+
     private IEnumerator AutoDetonate()
     {
         yield return new WaitForSeconds(m_maxLifetime);
+
+        StopAllCoroutines();
         Detonate(transform.position);
     }
 }
