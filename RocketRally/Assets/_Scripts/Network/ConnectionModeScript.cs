@@ -139,11 +139,34 @@ public class ConnectionModeScript : MonoBehaviour
         //Destroy(m_menuCamera);
     }
 
+    // if setIp is false - 127.0.0.1 will be used
+    public void StartServer(bool setIp, string ip)
+    {
+        StartCoroutine(StartServerWhenReady(setIp, ip));
+    }
+
+    private IEnumerator StartServerWhenReady(bool setIp, string ip)
+    {
+        yield return new WaitUntil(() => NetworkManager.Singleton != null);
+
+        if (setIp)
+        {
+            UnityTransport ut = FindObjectOfType<UnityTransport>();
+            if (ut)
+            {
+                ut.ConnectionData.Address = ip;
+            }
+        }
+
+        StartServer();
+    }
+
     private void StartServer()
     {
         NetworkManager.Singleton.StartServer();
         OnNotifyConnectionEventServer?.Invoke();
         m_ConnectionModeButtons.SetActive(false);
+        print("Server Started");
     }
 
 
