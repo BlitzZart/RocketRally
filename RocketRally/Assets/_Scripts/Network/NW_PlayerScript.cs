@@ -25,26 +25,23 @@ public class NW_PlayerScript : NetworkBehaviour
 
 
 
-    private FPS_Controller m_fpsCtrl;
-    private NetworkObject m_netObj;
-    private Gun m_gun;
+    [SerializeField] private FPS_Controller m_fpsCtrl;
+    [SerializeField] private NetworkObject m_netObj;
+    [SerializeField] private Gun m_gun;
 
     private void Awake()
     {
-        m_instance = this;
-
         StartCoroutine(Initialize());
     }
 
     public void SetFpsController(FPS_Controller fpsCtrl)
     {
         NetworkObject netObject = fpsCtrl.GetComponent<NetworkObject>();
-
+        m_netObj = netObject;
 
         if (NetworkManager.Singleton.IsServer || netObject.IsLocalPlayer)
         {
             m_fpsCtrl = fpsCtrl;
-            m_netObj = netObject;
             m_gun = m_fpsCtrl.GetComponentInChildren<Gun>();
         }
         
@@ -52,9 +49,13 @@ public class NW_PlayerScript : NetworkBehaviour
 
         if (!netObject.IsLocalPlayer)
         {
+            Destroy(fpsCtrl);
 
             return;
         }
+
+
+        m_instance = this;
 
         UI_PlayerHud hud = FindObjectOfType<UI_PlayerHud>();
         hud.PlayerReady(m_fpsCtrl);
@@ -62,7 +63,7 @@ public class NW_PlayerScript : NetworkBehaviour
         if (!m_netObj.IsOwner)
         {
             // disable all player cameras but own
-            m_fpsCtrl.Head.enabled = false;
+            //m_fpsCtrl.Head.enabled = false;
             //    //Destroy(m_fpsCtrl.Head);
         }
     }
@@ -74,18 +75,17 @@ public class NW_PlayerScript : NetworkBehaviour
 
 
         NetworkObject netObject = GetComponent<NetworkObject>();
+        m_netObj = netObject;
         if (NetworkManager.Singleton.IsServer || netObject.IsLocalPlayer)
         {
             m_gun = GetComponentInChildren<Gun>();
-            m_netObj = netObject;
+
+            m_instance = this;
+            Debug.Log("NetworkManager initialized");
         }
-        m_initialized = true;
-
-
-        m_instance = this;
-        Debug.Log("NetworkManager initialized");
-
         m_detonator = FindObjectOfType<Detonator>();
+
+        m_initialized = true;
     }
 
     public void FireNetworkedRocket(Vector3 pos, Vector3 rot, Vector3 initVelocity, ulong ownerId)

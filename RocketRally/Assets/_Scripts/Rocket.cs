@@ -3,7 +3,7 @@ using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
-public class Rocket : MonoBehaviour
+public class Rocket : NetworkBehaviour
 {
     private Rigidbody m_body;
     private float m_force = 75.0f;
@@ -20,8 +20,9 @@ public class Rocket : MonoBehaviour
 
     // used to "sync" local and server rockets
     private bool m_localInstantiated = false;
-    private NetworkVariable<ulong> m_ownerId = new NetworkVariable<ulong>();
+    [SerializeField] private NetworkVariable<ulong> m_ownerId = new NetworkVariable<ulong>();
     private bool m_deactivatedNetRocket = false;
+    private bool m_useNetRocket = false;
 
     private void Awake()
     {
@@ -58,29 +59,41 @@ public class Rocket : MonoBehaviour
 
     private void Update()
     {
-        if (!m_deactivatedNetRocket &&
-            !m_localInstantiated && 
-            !NetworkManager.Singleton.IsServer)
+        if (!m_useNetRocket)
         {
-            m_deactivatedNetRocket = true;
-
-            Renderer r = GetComponent<Renderer>();
-            if (r)
+            if (!m_deactivatedNetRocket &&
+                !m_localInstantiated &&
+                !NetworkManager.Singleton.IsServer)
             {
-                r.enabled = false;
-            }
+                // we swawned this rockert
+                if (m_ownerId.Value == NW_PlayerScript.Instance.OwnerClientId)
+                {
+                    m_deactivatedNetRocket = true;
 
-            Collider c = GetComponent<Collider>();
-            if (c)
+                    Renderer r = GetComponent<Renderer>();
+                    if (r)
+                    {
+                        r.enabled = false;
+                    }
+
+                    Collider c = GetComponent<Collider>();
+                    if (c)
+                    {
+                        c.enabled = false;
+                    }
+
+                    Destroy(m_trail.gameObject);
+                }
+                else
+                {
+                    // someone else shot this rocket
+                    m_useNetRocket = true;
+                }
+            }
+            else if (m_deactivatedNetRocket)
             {
-                c.enabled = false;
+                return;
             }
-
-            Destroy(m_trail.gameObject);
-        }
-        else if (m_deactivatedNetRocket)
-        {
-            return;
         }
 
 
@@ -101,6 +114,8 @@ public class Rocket : MonoBehaviour
         m_body.AddForce(transform.up * m_force, ForceMode.Impulse);
 
         m_ownerId.Value = ownerId;
+
+        //m_ownerId.SetDirty(true);
 
         StartCoroutine(Arm());
 

@@ -78,17 +78,20 @@ public class FPS_Controller : MonoBehaviour
         yield return new WaitUntil(() => NW_PlayerScript.Instance != null);
         yield return new WaitUntil(() => NW_PlayerScript.Instance.Initialized);
 
-        if (NW_PlayerScript.Instance.IsLocal)
+        NW_PlayerScript nwPlayer = GetComponent<NW_PlayerScript>();
+
+        m_head = GetComponentInChildren<Camera>();
+
+        if (nwPlayer.IsLocal)
         {
             Cursor.lockState = CursorLockMode.Locked;
 
-            m_head = GetComponentInChildren<Camera>();
             m_feet = GetComponentInChildren<Feet>();
             m_rigidBody = GetComponent<Rigidbody>();
             m_gun = GetComponentInChildren<Gun>();
             m_health = GetComponent<Health>();
 
-            NW_PlayerScript.Instance.SetFpsController(this);
+
 
             m_headPosition = m_head.transform.localPosition;
 
@@ -98,7 +101,16 @@ public class FPS_Controller : MonoBehaviour
             }
             m_planetTransform = currentPlanet.transform;
 
+            nwPlayer.SetFpsController(this);
+
             m_initialized = true;
+        }
+        else
+        {
+            Camera cam = m_head.GetComponent<Camera>();
+            AudioListener al = m_head.GetComponent<AudioListener>();
+            Destroy(cam);
+            Destroy(al);
         }
     }
 

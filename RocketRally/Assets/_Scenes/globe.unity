@@ -431,7 +431,7 @@ MonoBehaviour:
   m_MaxConnectAttempts: 60
   m_DisconnectTimeoutMS: 30000
   ConnectionData:
-    Address: 207.154.233.46
+    Address: 127.0.0.1
     Port: 7777
 --- !u!114 &132766776
 MonoBehaviour:
@@ -445,6 +445,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2e3f61e9489f6c40bf46a7ada82b05e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_useLocalServer: 0
 --- !u!1 &196172238
 GameObject:
   m_ObjectHideFlags: 0
@@ -2578,7 +2579,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1769509052}
   - component: {fileID: 1769509054}
-  - component: {fileID: 1769509053}
   m_Layer: 5
   m_Name: Camera
   m_TagString: Untagged
@@ -2605,14 +2605,6 @@ RectTransform:
   m_AnchoredPosition: {x: 202, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!81 &1769509053
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1769509051}
-  m_Enabled: 1
 --- !u!20 &1769509054
 Camera:
   m_ObjectHideFlags: 0

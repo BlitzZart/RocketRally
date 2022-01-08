@@ -148,6 +148,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e14f6a8dd22826f49ba284437a75a5a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_fpsCtrl: {fileID: 0}
+  m_netObj: {fileID: 0}
+  m_gun: {fileID: 0}
 --- !u!114 &2928652802358043224
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -430,7 +433,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 251703
+    m_Bits: 4294967295
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0

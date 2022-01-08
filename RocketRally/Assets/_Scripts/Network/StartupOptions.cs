@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class StartupOptions : MonoBehaviour
 {
+    [SerializeField] private bool m_useLocalServer = false;
+
+    //207.154.233.46 - digital ocean
     private void Start()
     {
         print("Starting up");
@@ -27,13 +30,21 @@ public class StartupOptions : MonoBehaviour
             }
         }
 
+        ConnectionModeScript cms = FindObjectOfType<ConnectionModeScript>();
         if (isServer)
         {
-            ConnectionModeScript cms = FindObjectOfType<ConnectionModeScript>();
             if (cms)
             {
                 cms.StartServer(true, ip);
             }
         }
+        else if (m_useLocalServer)
+        {
+            if (cms)
+            {
+                cms.SetIp("127.0.0.1");
+            }
+        }
+
     }
 }

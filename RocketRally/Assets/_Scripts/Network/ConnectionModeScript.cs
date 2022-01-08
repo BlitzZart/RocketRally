@@ -145,6 +145,22 @@ public class ConnectionModeScript : MonoBehaviour
         StartCoroutine(StartServerWhenReady(setIp, ip));
     }
 
+    public void SetIp(string ip)
+    {
+        StartCoroutine(SetIpWhenReady(ip));
+    }
+
+    private IEnumerator SetIpWhenReady(string ip)
+    {
+        yield return new WaitUntil(() => NetworkManager.Singleton != null);
+
+        UnityTransport ut = FindObjectOfType<UnityTransport>();
+        if (ut)
+        {
+            ut.ConnectionData.Address = ip;
+        }
+    }
+
     private IEnumerator StartServerWhenReady(bool setIp, string ip)
     {
         yield return new WaitUntil(() => NetworkManager.Singleton != null);
