@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections;
 using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 
 public class Rocket : NetworkBehaviour
 {
     private Rigidbody m_body;
-    private float m_force = 75.0f;
+    private float m_force = 25.0f;
     private float m_maxLifetime = 3.0f;
     [SerializeField]
     private GameObject m_trailPrefab;
@@ -95,8 +96,7 @@ public class Rocket : NetworkBehaviour
                 return;
             }
         }
-
-
+        
         m_trail.position = transform.position;
     }
 
@@ -133,7 +133,15 @@ public class Rocket : NetworkBehaviour
             Destroy(m_trail.gameObject, 2.0f);
         }
 
-        Destroy(gameObject);
+        if (NetworkManager.Singleton.IsServer)
+        {
+            NetworkObject no = GetComponent<NetworkObject>();
+            no.Despawn();
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
     private IEnumerator Arm()
