@@ -12,11 +12,17 @@ public class Gun : MonoBehaviour
     public Rocket m_stdRocketPrefab;
 
     public Transform muzzle;
+    public FPS_Controller m_fpsController;
 
+    private void OnEnable()
+    {
+        m_fpsController = transform.root.GetComponent<FPS_Controller>();
+    }
 
     public void Fire()
     {
-        if (!m_ready)
+        if (!m_ready ||
+            m_fpsController.IsDead)
         {
             return;
         }
@@ -30,18 +36,22 @@ public class Gun : MonoBehaviour
         //print("VEL " + vel.magnitude);
         // only use start vel of player if the player moves forward
         float dot = Vector3.Dot(vel.normalized, transform.forward);
+        Debug.DrawRay(transform.position, transform.forward * 5, Color.magenta, 2.0f);
+        Debug.DrawRay(transform.position, transform.up, Color.magenta, 2.0f);
+        Debug.DrawRay(transform.position, vel.normalized * 2, Color.red, 2.0f);
+
         //print("DOT = " + dot);
         if (dot < 0.1f)
         {
             //print("DOT < " + dot);
             vel = -vel;
         }
-        r.Fire(vel, NetworkManager.Singleton.LocalClientId, true);
+        r.Fire(vel.magnitude, NetworkManager.Singleton.LocalClientId, true);
 
         NW_PlayerScript.Instance.FireNetworkedRocket(
             muzzle.position,
             muzzle.rotation.eulerAngles,
-            vel,
+            vel.magnitude,
             NetworkManager.Singleton.LocalClientId);
 
         //r.Fire(m_owner);

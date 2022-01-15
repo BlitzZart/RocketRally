@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 public class Detonator : MonoBehaviour
@@ -15,8 +16,10 @@ public class Detonator : MonoBehaviour
 
         if (Detonated != null)
         {
-            Detonated?.Invoke(pos, maxDamage, maxRange);
+            if (NetworkManager.Singleton.IsServer)
+            {
+                Detonated?.Invoke(pos, maxDamage, maxRange);
+            }
         }
-
     }
 }

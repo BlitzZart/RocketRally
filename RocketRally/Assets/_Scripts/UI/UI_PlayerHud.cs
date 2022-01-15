@@ -10,14 +10,22 @@ public class UI_PlayerHud : MonoBehaviour
 
     private void Awake()
     {
+        if (StartupOptions.isHeadlessServer)
+        {
+            return;
+        }
         m_container = transform.GetChild(0);
     }
 
     public void PlayerReady(FPS_Controller player)
     {
+        if (StartupOptions.isHeadlessServer)
+        {
+            return;
+        }
         m_player = player;
 
-        m_player.Health.OnHealthChanged += (hp) =>
+        m_player.Health.PlayerHealthChanged += (hp) =>
         {
             m_healthTxt.text = hp.ToString("0");
         };

@@ -6,6 +6,8 @@ using UnityEngine;
 
 public class Rocket : NetworkBehaviour
 {
+    private static int rocketCnt = 0;
+
     private Rigidbody m_body;
     private float m_force = 25.0f;
     private float m_maxLifetime = 3.0f;
@@ -28,6 +30,8 @@ public class Rocket : NetworkBehaviour
     private void Awake()
     {
         m_trail = Instantiate(m_trailPrefab, transform.position, Quaternion.identity).transform;
+        name = rocketCnt + name;
+        m_trail.name = rocketCnt++ + m_trail.name;
 
         // take care of stray rockets
         //if (!NetworkManager.Singleton.IsServer)
@@ -46,7 +50,7 @@ public class Rocket : NetworkBehaviour
             NetworkObject no = collision.gameObject.GetComponent<NetworkObject>();
             if (no)
             {
-                if (no.NetworkObjectId == m_ownerId.Value)
+                if (no.OwnerClientId == m_ownerId.Value)
                 {
                     return;
                 }
@@ -82,7 +86,6 @@ public class Rocket : NetworkBehaviour
                     {
                         c.enabled = false;
                     }
-
                     Destroy(m_trail.gameObject);
                 }
                 else
@@ -100,7 +103,7 @@ public class Rocket : NetworkBehaviour
         m_trail.position = transform.position;
     }
 
-    public void Fire(Vector3 initVelocity, ulong ownerId, bool locallyInstantiated = false)
+    public void Fire(float initVelocity, ulong ownerId, bool locallyInstantiated = false)
     {
         m_localInstantiated = locallyInstantiated;
         AutoGravity ag = GetComponent<AutoGravity>();
@@ -110,7 +113,7 @@ public class Rocket : NetworkBehaviour
         }
 
         m_body = GetComponent<Rigidbody>();
-        m_body.velocity = initVelocity;
+        m_body.velocity = transform.up * initVelocity;
         m_body.AddForce(transform.up * m_force, ForceMode.Impulse);
 
         m_ownerId.Value = ownerId;
@@ -126,7 +129,11 @@ public class Rocket : NetworkBehaviour
     {
         StopAllCoroutines();
 
-        NW_PlayerScript.Instance.Detonate(pos, m_maxRange, m_maxDamage);
+        if(!m_localInstantiated)
+        {
+            NW_PlayerScript.Instance.Detonate(pos, m_maxRange, m_maxDamage);
+        }
+
 
         if (m_trail)
         {

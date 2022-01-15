@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class StartupOptions : MonoBehaviour
 {
+    public static bool isHeadlessServer = false;
     [SerializeField] private bool m_useLocalServer = false;
 
     //207.154.233.46 - digital ocean
@@ -36,6 +37,7 @@ public class StartupOptions : MonoBehaviour
             if (cms)
             {
                 cms.StartServer(true, ip);
+                isHeadlessServer = true;
             }
         }
         else if (m_useLocalServer)
