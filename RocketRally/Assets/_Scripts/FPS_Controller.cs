@@ -14,7 +14,7 @@ public class FPS_Controller : MonoBehaviour
     public Planet currentPlanet;
     private Transform m_planetTransform;
     private bool m_transitionTriggered = false;
-    [SerializeField] private bool m_isInPlanetTransition = false;
+    private bool m_isInPlanetTransition = false;
     private bool m_isInTransitionInitiationPhase = false;
     private Vector3 m_lastPlanetsPosition;
 
@@ -48,10 +48,11 @@ public class FPS_Controller : MonoBehaviour
     public Health Health { get => m_health; }
     private bool m_isDead = false;
     public bool IsDead { get => m_isDead; }
-    [SerializeField] private bool m_driftingAfterDeath = false;
-    private float m_respawnCooldown = 5.0f;
+    private bool m_driftingAfterDeath = false;
+    private bool m_playerInCooldown = false;
+    private float m_respawnCooldown = 10.0f;
     private float m_currentRespawnTime;
-    public float CurrentRespawnTime { get => m_currentRespawnTime; }
+    public float RemainungRespawnTime { get => m_respawnCooldown - m_currentRespawnTime; }
 
     private void Start()
     {
@@ -65,9 +66,14 @@ public class FPS_Controller : MonoBehaviour
         {
             return;
         }
+
+        if (m_playerInCooldown)
+        {
+            return;
+        }
+
         UpdateInput();
         UpdateHead();
-
         UpdateMovement();
     }
 
@@ -80,8 +86,6 @@ public class FPS_Controller : MonoBehaviour
 
         UpdatePlanetSelection();
         UpdateGravity();
-
-
         UpdateJump();
     }
 
@@ -106,8 +110,7 @@ public class FPS_Controller : MonoBehaviour
         currentPlanet = null;
 
         m_driftingAfterDeath = true;
-
-        
+        StartCoroutine(HandleDeadPlayerInactivity());
     }
 
     public void RevivePlayer()
@@ -166,7 +169,6 @@ public class FPS_Controller : MonoBehaviour
 
     private void UpdateInput()
     {
-
         // shooting
         if (Input.GetAxis("Fire1") > 0)
         {
@@ -341,18 +343,15 @@ public class FPS_Controller : MonoBehaviour
         m_isInTransitionInitiationPhase = false;
     }
 
-    private IEnumerator HandleDeadPlayerInactivityAndCooldown()
+    private IEnumerator HandleDeadPlayerInactivity()
     {
-
-
+        m_playerInCooldown = true;
         m_currentRespawnTime = 0;
         while (m_currentRespawnTime < m_respawnCooldown)
         {
             m_currentRespawnTime += Time.deltaTime;
+            yield return 0;
         }
-
-
-        yield return 0;
-
+        m_playerInCooldown = false;
     }
 }

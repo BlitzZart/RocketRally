@@ -47,7 +47,7 @@ public class Health : NetworkBehaviour
         PlayerHealthChanged?.Invoke(newValue);
     }
 
-    private void OnDetonated(Vector3 pos, float maxDamage, float maxRange)
+    private void OnDetonated(ulong ownerId, Vector3 pos, float maxDamage, float maxRange)
     {
         float dist = Mathf.Max(1.0f, Vector3.Distance(transform.position, pos));
 

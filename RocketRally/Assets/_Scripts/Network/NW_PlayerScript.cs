@@ -153,32 +153,32 @@ public class NW_PlayerScript : NetworkBehaviour
         no.Spawn(true);
     }
 
-    public void Detonate(Vector3 pos, float maxRange, float maxDamage)
+    public void Detonate(ulong ownerId, Vector3 pos, float maxRange, float maxDamage)
     {
         print("Detonate");
         if (NetworkManager.Singleton.IsServer)
         {
-            DetonateClientRpc(pos, maxRange, maxDamage);
+            DetonateClientRpc(ownerId, pos, maxRange, maxDamage);
             // with zero damage and zero range to visualize on server
             // pointless on headless sever!
             // TODO: remove in final version
-            m_detonator.SpawnDetonation(pos, maxRange, maxDamage);
+            m_detonator.SpawnDetonation(ownerId, pos, maxRange, maxDamage);
         }
         else if (m_netObj.IsLocalPlayer)
         {
-            DetonateServerRpc(pos, maxRange, maxDamage);
+            DetonateServerRpc(ownerId, pos, maxRange, maxDamage);
         }
     }
 
     [ClientRpc]
-    public void DetonateClientRpc(Vector3 pos, float maxRange, float maxDamage)
+    public void DetonateClientRpc(ulong ownerId, Vector3 pos, float maxRange, float maxDamage)
     {
-        m_detonator.SpawnDetonation(pos, maxRange, maxDamage);
+        m_detonator.SpawnDetonation(ownerId, pos, maxRange, maxDamage);
     }
 
     [ServerRpc]
-    public void DetonateServerRpc(Vector3 pos, float maxRange, float maxDamage)
+    public void DetonateServerRpc(ulong ownerId, Vector3 pos, float maxRange, float maxDamage)
     {
-        m_detonator.SpawnDetonation(pos, maxRange, maxDamage);
+        m_detonator.SpawnDetonation(ownerId, pos, maxRange, maxDamage);
     }
 }

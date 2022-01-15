@@ -3,13 +3,13 @@ using UnityEngine;
 
 public class Detonator : MonoBehaviour
 {
-    public delegate void DetonationDelegate(Vector3 pos, float maxDamage, float maxRange);
+    public delegate void DetonationDelegate(ulong playerI, Vector3 pos, float maxDamage, float maxRange);
     public static event DetonationDelegate Detonated;
 
     [SerializeField]
     private GameObject m_explosionPrefab;
 
-    public void SpawnDetonation(Vector3 pos, float maxRange, float maxDamage)
+    public void SpawnDetonation(ulong playerId, Vector3 pos, float maxRange, float maxDamage)
     {
         GameObject go = Instantiate(m_explosionPrefab, pos, Quaternion.identity);
         Destroy(go, go.GetComponent<ParticleSystem>().main.duration);
@@ -18,7 +18,7 @@ public class Detonator : MonoBehaviour
         {
             if (NetworkManager.Singleton.IsServer)
             {
-                Detonated?.Invoke(pos, maxDamage, maxRange);
+                Detonated?.Invoke(playerId, pos, maxDamage, maxRange);
             }
         }
     }

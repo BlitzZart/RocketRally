@@ -131,7 +131,7 @@ public class Rocket : NetworkBehaviour
 
         if(!m_localInstantiated)
         {
-            NW_PlayerScript.Instance.Detonate(pos, m_maxRange, m_maxDamage);
+            NW_PlayerScript.Instance.Detonate(m_ownerId.Value, pos, m_maxRange, m_maxDamage);
         }
 
 
