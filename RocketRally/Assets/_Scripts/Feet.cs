@@ -12,7 +12,8 @@ public class Feet : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         m_onGround = true;
-        HitGround();
+        
+        HitGround?.Invoke();
     }
 
     private void OnTriggerExit(Collider other)

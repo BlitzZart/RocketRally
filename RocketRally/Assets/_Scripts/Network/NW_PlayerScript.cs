@@ -5,6 +5,9 @@ using UnityEngine;
 
 public class NW_PlayerScript : NetworkBehaviour
 {
+    // <killedPlayer, killedBy>
+    public Action<ulong, ulong> PlayerKilled;
+
     private static NW_PlayerScript m_instance;
     public static NW_PlayerScript Instance {
         get {
@@ -31,6 +34,7 @@ public class NW_PlayerScript : NetworkBehaviour
     private Health m_health;
     public Health Health { get => m_health; }
 
+    #region Unity Callbacks
     private void Awake()
     {
         StartCoroutine(Initialize());
@@ -45,7 +49,9 @@ public class NW_PlayerScript : NetworkBehaviour
 
         m_health.PlayerDied -= OnPlayerDied;
     }
+    #endregion
 
+    #region public
     public void SetFpsController(FPS_Controller fpsCtrl)
     {
         NetworkObject netObject = fpsCtrl.GetComponent<NetworkObject>();
@@ -79,17 +85,97 @@ public class NW_PlayerScript : NetworkBehaviour
             //    //Destroy(m_fpsCtrl.Head);
         }
     }
-
-    private void OnPlayerDied()
+    private void OnPlayerDied(ulong dmgDealerId)
     {
         print("Player Died 4 real");
 
         if (NetworkManager.Singleton.IsServer)
         {
-            KillPlayerClientRpc();
+            KillPlayerClientRpc(dmgDealerId);
+        }
+
+        PlayerKilled?.Invoke(m_netObj.OwnerClientId, dmgDealerId);
+    }
+    public void FireNetworkedRocket(Vector3 pos, Vector3 rot, float initVelocity, ulong ownerId)
+    {
+        print(System.Reflection.MethodBase.GetCurrentMethod().Name);
+        if (NetworkManager.Singleton.IsServer)
+        {
+            FireClientRpc(pos, rot, initVelocity, ownerId);
+        }
+        else if (m_netObj.IsLocalPlayer)
+        {
+            FireServerRpc(pos, rot, initVelocity, ownerId);
+        }
+    }
+    public void Detonate(ulong ownerId, Vector3 pos, float maxRange, float maxDamage)
+    {
+        print("Detonate");
+        if (NetworkManager.Singleton.IsServer)
+        {
+            DetonateClientRpc(ownerId, pos, maxRange, maxDamage);
+            // with zero damage and zero range to visualize on server
+            // pointless on headless sever!
+            // TODO: remove in final version
+            m_detonator.SpawnDetonation(ownerId, pos, maxRange, maxDamage);
+        }
+        else if (m_netObj.IsLocalPlayer)
+        {
+            DetonateServerRpc(ownerId, pos, maxRange, maxDamage);
+        }
+    }
+    #endregion
+
+    #region Netwrok Functions
+    [ServerRpc]
+    public void RevivePlayerServerRpc()
+    {
+        m_health.Revive();
+    }
+    [ClientRpc]
+    public void KillPlayerClientRpc(ulong dmgDealerId)
+    {
+        print(NetworkManager.Singleton.LocalClientId + " was KILLED by " + dmgDealerId);
+
+        // only kill self
+        if (m_fpsCtrl)
+        {
+            m_fpsCtrl.KillPlayer(dmgDealerId);
         }
     }
 
+    [ClientRpc]
+    public void FireClientRpc(Vector3 pos, Vector3 rot, float initVelocity, ulong ownerNetId)
+    {
+        print(System.Reflection.MethodBase.GetCurrentMethod().Name);
+        Rocket r = Instantiate(m_gun.m_stdRocketPrefab, pos, Quaternion.Euler(rot));
+        r.Fire(initVelocity, ownerNetId);
+        NetworkObject no = r.GetComponent<NetworkObject>();
+        no.Spawn(true);
+    }
+    [ServerRpc]
+    public void FireServerRpc(Vector3 pos, Vector3 rot, float initVelocity, ulong ownerNetId)
+    {
+        //print(System.Reflection.MethodBase.GetCurrentMethod().Name);
+        Rocket r = Instantiate(m_gun.m_stdRocketPrefab, pos, Quaternion.Euler(rot));
+        r.Fire(initVelocity, ownerNetId);
+        NetworkObject no = r.GetComponent<NetworkObject>();
+        no.Spawn(true);
+    }
+
+    [ClientRpc]
+    public void DetonateClientRpc(ulong ownerId, Vector3 pos, float maxRange, float maxDamage)
+    {
+        m_detonator.SpawnDetonation(ownerId, pos, maxRange, maxDamage);
+    }
+    [ServerRpc]
+    public void DetonateServerRpc(ulong ownerId, Vector3 pos, float maxRange, float maxDamage)
+    {
+        m_detonator.SpawnDetonation(ownerId, pos, maxRange, maxDamage);
+    }
+    #endregion
+
+    #region private
     private IEnumerator Initialize()
     {
         yield return new WaitUntil(() => NetworkManager.Singleton != null);
@@ -107,78 +193,5 @@ public class NW_PlayerScript : NetworkBehaviour
 
         m_initialized = true;
     }
-
-    public void FireNetworkedRocket(Vector3 pos, Vector3 rot, float initVelocity, ulong ownerId)
-    {
-        print(System.Reflection.MethodBase.GetCurrentMethod().Name);
-        if (NetworkManager.Singleton.IsServer)
-        {
-            FireClientRpc(pos, rot, initVelocity, ownerId);
-        }
-        else if (m_netObj.IsLocalPlayer)
-        {
-            FireServerRpc(pos, rot, initVelocity, ownerId);
-        }
-    }
-
-    [ServerRpc]
-    public void RevivePlayerServerRpc()
-    {
-        m_health.Revive();
-    }
-
-    [ClientRpc]
-    public void KillPlayerClientRpc()
-    {
-        m_fpsCtrl.KillPlayer();
-    }
-
-    [ClientRpc]
-    public void FireClientRpc(Vector3 pos, Vector3 rot, float initVelocity, ulong ownerId)
-    {
-        print(System.Reflection.MethodBase.GetCurrentMethod().Name);
-        Rocket r = Instantiate(m_gun.m_stdRocketPrefab, pos, Quaternion.Euler(rot));
-        r.Fire(initVelocity, ownerId);
-        NetworkObject no = r.GetComponent<NetworkObject>();
-        no.Spawn(true);
-    }
-
-    [ServerRpc]
-    public void FireServerRpc(Vector3 pos, Vector3 rot, float initVelocity, ulong ownerId)
-    {
-        //print(System.Reflection.MethodBase.GetCurrentMethod().Name);
-        Rocket r = Instantiate(m_gun.m_stdRocketPrefab, pos, Quaternion.Euler(rot));
-        r.Fire(initVelocity, ownerId);
-        NetworkObject no = r.GetComponent<NetworkObject>();
-        no.Spawn(true);
-    }
-
-    public void Detonate(ulong ownerId, Vector3 pos, float maxRange, float maxDamage)
-    {
-        print("Detonate");
-        if (NetworkManager.Singleton.IsServer)
-        {
-            DetonateClientRpc(ownerId, pos, maxRange, maxDamage);
-            // with zero damage and zero range to visualize on server
-            // pointless on headless sever!
-            // TODO: remove in final version
-            m_detonator.SpawnDetonation(ownerId, pos, maxRange, maxDamage);
-        }
-        else if (m_netObj.IsLocalPlayer)
-        {
-            DetonateServerRpc(ownerId, pos, maxRange, maxDamage);
-        }
-    }
-
-    [ClientRpc]
-    public void DetonateClientRpc(ulong ownerId, Vector3 pos, float maxRange, float maxDamage)
-    {
-        m_detonator.SpawnDetonation(ownerId, pos, maxRange, maxDamage);
-    }
-
-    [ServerRpc]
-    public void DetonateServerRpc(ulong ownerId, Vector3 pos, float maxRange, float maxDamage)
-    {
-        m_detonator.SpawnDetonation(ownerId, pos, maxRange, maxDamage);
-    }
+    #endregion
 }

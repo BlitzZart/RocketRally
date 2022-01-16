@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using Unity.Netcode;
 using UnityEngine;
 
 public class FPS_Controller : MonoBehaviour
@@ -54,12 +53,12 @@ public class FPS_Controller : MonoBehaviour
     private float m_currentRespawnTime;
     public float RemainungRespawnTime { get => m_respawnCooldown - m_currentRespawnTime; }
 
+    #region Unity Callbacks
     private void Start()
     {
         StartCoroutine(Initialize());
         m_health = GetComponent<Health>();
     }
-
     private void Update()
     {
         if (!m_initialized)
@@ -76,7 +75,6 @@ public class FPS_Controller : MonoBehaviour
         UpdateHead();
         UpdateMovement();
     }
-
     private void FixedUpdate()
     {
         if (!m_initialized)
@@ -88,41 +86,14 @@ public class FPS_Controller : MonoBehaviour
         UpdateGravity();
         UpdateJump();
     }
-
     private void OnDestroy()
     {
-        m_feet.HitGround -= OnHitGround;
+        if(m_feet != null)
+        {
+            m_feet.HitGround -= OnHitGround;
+        }
     }
-
-    public void KillPlayer()
-    {
-        m_isDead = true;
-
-        m_rigidBody.constraints = RigidbodyConstraints.None;
-        m_rigidBody.drag = 0;
-        m_rigidBody.angularDrag = 0;
-
-        m_rigidBody.AddTorque(UnityEngine.Random.insideUnitSphere * 10);
-        m_rigidBody.AddForce(
-            (transform.position - currentPlanet.transform.position).normalized * 20.0f + 
-            UnityEngine.Random.insideUnitSphere, ForceMode.Impulse);
-
-        currentPlanet = null;
-
-        m_driftingAfterDeath = true;
-        StartCoroutine(HandleDeadPlayerInactivity());
-    }
-
-    public void RevivePlayer()
-    {
-        m_isDead = false;
-
-        m_rigidBody.constraints = RigidbodyConstraints.FreezeRotation;
-        m_rigidBody.drag = m_initDrag;
-        m_rigidBody.angularDrag = m_initAngDrag;
-
-        NW_PlayerScript.Instance.RevivePlayerServerRpc();
-    }
+    #endregion
 
     private IEnumerator Initialize()
     {
@@ -167,24 +138,68 @@ public class FPS_Controller : MonoBehaviour
         }
     }
 
-    private void UpdateInput()
+    #region Public
+    public void KillPlayer(ulong dmgDealerId)
     {
-        // shooting
-        if (Input.GetAxis("Fire1") > 0)
-        {
-            m_gun.Fire();
-        }
+        m_isDead = true;
 
-        // planet selection
-        if (Input.GetButtonDown("Fire2"))
+        m_rigidBody.constraints = RigidbodyConstraints.None;
+        m_rigidBody.drag = 0;
+        m_rigidBody.angularDrag = 0;
+
+        m_rigidBody.AddTorque(UnityEngine.Random.insideUnitSphere * 10);
+        m_rigidBody.AddForce(
+            (transform.position - currentPlanet.transform.position).normalized * 20.0f + 
+            UnityEngine.Random.insideUnitSphere, ForceMode.Impulse);
+
+        currentPlanet = null;
+
+        m_driftingAfterDeath = true;
+        StartCoroutine(HandleDeadPlayerInactivity());
+    }
+    public void RevivePlayer()
+    {
+        m_isDead = false;
+
+        m_rigidBody.constraints = RigidbodyConstraints.FreezeRotation;
+        m_rigidBody.drag = m_initDrag;
+        m_rigidBody.angularDrag = m_initAngDrag;
+
+        NW_PlayerScript.Instance.RevivePlayerServerRpc();
+    }
+    #endregion
+
+    #region fixed updated functions
+    private void UpdatePlanetSelection()
+    {
+        if (m_transitionTriggered)
         {
-            // decouppling input from fixedUpdate
-            m_transitionTriggered = true;
+            m_transitionTriggered = false;
+            RaycastHit hitInfo;
+            Ray ray = new Ray(m_head.transform.position, m_head.transform.forward);
+            Physics.Raycast(ray, out hitInfo, 1000, planetOnlyMask);
+
+            Debug.DrawRay(ray.origin, ray.direction * 1000, Color.green, 0.5f);
+
+            if (hitInfo.transform != null && hitInfo.transform.root != currentPlanet?.transform.root)
+            {
+                m_head.transform.SetParent(null);
+
+                //print("Switching to " + hitInfo.transform.root.name);
+                currentPlanet = hitInfo.transform.root.GetComponentInChildren<Planet>();
+                m_planetTransform = currentPlanet.transform.root;
+                m_lastPlanetsPosition = m_planetTransform.position;
+
+                if (m_isDead)
+                {
+                    RevivePlayer();
+                }
+
+                StartCoroutine(PlanetTransition());
+            }
+
         }
     }
-
-
-
     private void UpdateGravity()
     {
         if (IsDead)
@@ -227,39 +242,6 @@ public class FPS_Controller : MonoBehaviour
 
         m_rigidBody.AddForce(m_upVector * gravity);
     }
-    private void UpdatePlanetSelection()
-    {
-        if (m_transitionTriggered)
-        {
-            m_transitionTriggered = false;
-            RaycastHit hitInfo;
-            Ray ray = new Ray(m_head.transform.position, m_head.transform.forward);
-            Physics.Raycast(ray, out hitInfo, 1000, planetOnlyMask);
-
-            Debug.DrawRay(ray.origin, ray.direction * 1000, Color.green, 0.5f);
-
-            if (hitInfo.transform != null && hitInfo.transform.root != currentPlanet?.transform.root)
-            {
-                m_head.transform.SetParent(null);
-
-                //print("Switching to " + hitInfo.transform.root.name);
-                currentPlanet = hitInfo.transform.root.GetComponentInChildren<Planet>();
-                m_planetTransform = currentPlanet.transform.root;
-                m_lastPlanetsPosition = m_planetTransform.position;
-
-                if (m_isDead)
-                {
-                    RevivePlayer();
-                }
-
-                StartCoroutine(PlanetTransition());
-            }
-
-        }
-    }
-
-    #region fixed updated functions
-
     private void UpdateJump()
     {
         if (Input.GetAxis("Jump") <= 0)
@@ -283,6 +265,31 @@ public class FPS_Controller : MonoBehaviour
         StartCoroutine(JumpCoolDown());
 
         m_rigidBody.AddForce(transform.up * m_jumpForce, ForceMode.Impulse);
+    }
+    private void OnHitGround()
+    {
+        if (m_isInPlanetTransition && m_feet.OnGround)
+        {
+            m_isInPlanetTransition = false;
+        }
+    }
+    #endregion
+
+    #region non-fix updated functions
+    private void UpdateInput()
+    {
+        // shooting
+        if (Input.GetAxis("Fire1") > 0)
+        {
+            m_gun.Fire();
+        }
+
+        // planet selection
+        if (Input.GetButtonDown("Fire2"))
+        {
+            // decouppling input from fixedUpdate
+            m_transitionTriggered = true;
+        }
     }
     private void UpdateHead()
     {
@@ -312,16 +319,9 @@ public class FPS_Controller : MonoBehaviour
         Quaternion targetRotation = Quaternion.FromToRotation(transform.up, m_upVector) * transform.rotation;
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 100.0f * Time.deltaTime);
     }
-
-    private void OnHitGround()
-    {
-        if (m_isInPlanetTransition && m_feet.OnGround)
-        {
-            m_isInPlanetTransition = false;
-        }
-    }
     #endregion
 
+    #region private
     private IEnumerator JumpCoolDown()
     {
         yield return new WaitForSeconds(m_jumpCooldown);   
@@ -342,7 +342,6 @@ public class FPS_Controller : MonoBehaviour
 
         m_isInTransitionInitiationPhase = false;
     }
-
     private IEnumerator HandleDeadPlayerInactivity()
     {
         m_playerInCooldown = true;
@@ -354,4 +353,5 @@ public class FPS_Controller : MonoBehaviour
         }
         m_playerInCooldown = false;
     }
+    #endregion
 }

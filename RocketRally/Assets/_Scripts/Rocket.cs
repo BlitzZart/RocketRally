@@ -40,6 +40,15 @@ public class Rocket : NetworkBehaviour
         //}
     }
 
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+        if (m_trail)
+        {
+            Destroy(m_trail.gameObject, 2.0f);
+        }
+    }
+
     private void OnCollisionEnter(Collision collision)
     {
         //print("Rocket collided with: " + collision.gameObject.name);

@@ -12,19 +12,22 @@ public class Health : NetworkBehaviour
 
     [SerializeField]
     private NetworkVariable<float> m_currentHp = new NetworkVariable<float>();
+    private NetworkVariable<bool> m_playerIsDead = new NetworkVariable<bool>();
+
 
     public float CurrentHp { get => m_currentHp.Value; set => m_currentHp.Value = value; }
 
     public Action<float> PlayerHealthChanged;
-    public Action PlayerDied;
-    public delegate void PlayerDelegate(int id);
-    public static event PlayerDelegate PlayerDiedEvent;
+    public Action<ulong> PlayerDied;
+
+
 
     private void Start()
     {
         if (NetworkManager.Singleton.IsServer)
         {
             m_currentHp.Value = m_startHp;
+            m_playerIsDead.Value = false;
             Detonator.Detonated += OnDetonated;
         }
         else
@@ -54,8 +57,8 @@ public class Health : NetworkBehaviour
         if (dist < maxRange)
         {
             float dmgWheight = (maxRange / dist) / maxRange;
-            //print("range: " + rng + " dist: " + dist + " % " + dmgWheight);
-            Damage(maxDamage * dmgWheight);
+            print(">> Detonation from: " + ownerId + " me: " + NetworkManager.Singleton.LocalClientId);
+            Damage(ownerId, maxDamage * dmgWheight);
         }
     }
 
@@ -69,25 +72,31 @@ public class Health : NetworkBehaviour
     public void Revive()
     {
         print("Heal to " + m_maxHp);
+        m_playerIsDead.Value = false;
         m_currentHp.Value = m_maxHp;
         HealthChanged();
     }
 
-    public void Damage(float hp)
+    public void Damage(ulong dmgDealerId, float hp)
     {
         print("Damage: " + hp);
         m_currentHp.Value = Mathf.Max(m_currentHp.Value - hp, 0);
         print("Health: " + m_currentHp.Value);
-        HealthChanged();
+        HealthChanged(dmgDealerId);
     }
 
-    private void HealthChanged()
+    // TODO: translate ulong (net id) to int (player number) or player UID at some point
+    private void HealthChanged(ulong dmgDealerId = ulong.MaxValue)
     {
         PlayerHealthChanged?.Invoke(m_currentHp.Value);
 
         if (m_currentHp.Value <= 0)
         {
-            PlayerDied?.Invoke();
+            if (!m_playerIsDead.Value)
+            {
+                m_playerIsDead.Value = true;
+                PlayerDied?.Invoke(dmgDealerId);
+            }
         }
     }
 }

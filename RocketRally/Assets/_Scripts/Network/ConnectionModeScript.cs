@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using Unity.Netcode;
+using TMPro;
 
 
 //#if ENABLE_RELAY_SERVICE
@@ -14,6 +15,8 @@ using Unity.Netcode;
 /// </summary>
 public class ConnectionModeScript : MonoBehaviour
 {
+    public static string PlayerName = "unnamed";
+
     [SerializeField]
     private Camera m_menuCamera;
 
@@ -269,6 +272,13 @@ public class ConnectionModeScript : MonoBehaviour
     {
         NetworkManager.Singleton.StartClient();
         OnNotifyConnectionEventClient?.Invoke();
+
+        TMP_InputField n = GetComponentInChildren<TMP_InputField>();
+        if (n != null)
+        {
+            PlayerName = n.text;
+        }
+
         m_ConnectionModeButtons.SetActive(false);
     }
 
