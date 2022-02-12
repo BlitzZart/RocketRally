@@ -9,10 +9,9 @@ public class Rocket : NetworkBehaviour
     private static int rocketCnt = 0;
 
     private Rigidbody m_body;
-    private float m_force = 25.0f;
-    private float m_maxLifetime = 3.0f;
-    [SerializeField]
-    private GameObject m_trailPrefab;
+    [SerializeField] private float m_force = 50.0f;
+    private float m_maxLifetime = 7.0f;
+    [SerializeField] private GameObject m_trailPrefab;
     private Transform m_trail;
     private bool m_isArmed = false;
 
@@ -79,7 +78,7 @@ public class Rocket : NetworkBehaviour
                 !m_localInstantiated &&
                 !NetworkManager.Singleton.IsServer)
             {
-                // we swawned this rockert
+                // we spawned this rocket
                 if (m_ownerId.Value == NW_PlayerScript.Instance.OwnerClientId)
                 {
                     m_deactivatedNetRocket = true;
@@ -95,12 +94,19 @@ public class Rocket : NetworkBehaviour
                     {
                         c.enabled = false;
                     }
+
                     Destroy(m_trail.gameObject);
                 }
                 else
                 {
                     // someone else shot this rocket
                     m_useNetRocket = true;
+
+                    SimpleSoundPlayer ssp = GetComponentInChildren<SimpleSoundPlayer>();
+                    if (ssp != null)
+                    {
+                        ssp.PlayAudio();
+                    }
                 }
             }
             else if (m_deactivatedNetRocket)
@@ -128,6 +134,15 @@ public class Rocket : NetworkBehaviour
         m_ownerId.Value = ownerId;
 
         //m_ownerId.SetDirty(true);
+
+        if (locallyInstantiated)
+        {
+            SimpleSoundPlayer ssp = GetComponentInChildren<SimpleSoundPlayer>();
+            if (ssp != null)
+            {
+                ssp.PlayAudio();
+            }
+        }
 
         StartCoroutine(Arm());
 

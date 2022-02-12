@@ -4,12 +4,15 @@ using UnityEngine;
 
 public class AutoGravity : MonoBehaviour
 {
+    // TODO: maybe only use the closes planet or
+    // weight it so it comes close
+    // this would make rockets more predictable!!!
 
     private List<Planet> m_plantes;
     private Rigidbody m_body;
     private Vector3 m_gravity;
 
-    private float m_damping = 10.0f;
+    [SerializeField] private float m_effectMultiplier = 5.0f;
     private bool m_active = false;
     private bool m_homeActive = false;
     private Planet m_homePlanet;
@@ -30,7 +33,7 @@ public class AutoGravity : MonoBehaviour
             }
             m_gravity += (p.transform.position - transform.position) /
                 Vector3.Distance(p.transform.position, transform.position) *
-                p.mass * m_damping;
+                p.mass * m_effectMultiplier;
         }
 
         m_body.AddForce(m_gravity);

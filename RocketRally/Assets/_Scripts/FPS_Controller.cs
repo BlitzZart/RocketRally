@@ -6,8 +6,6 @@ public class FPS_Controller : MonoBehaviour
 {
     private bool m_initialized = false;
 
-    public float g;
-
     // Planet transition
     public LayerMask planetOnlyMask;
     public Planet currentPlanet;
@@ -28,6 +26,8 @@ public class FPS_Controller : MonoBehaviour
     private Camera m_head;
     private Feet m_feet;
     private Gun m_gun;
+    public Gun Gun { get => m_gun; }
+
     private Vector3 m_headPosition;
     private Vector3 m_upVector;
 
@@ -42,7 +42,7 @@ public class FPS_Controller : MonoBehaviour
     private bool m_jumpCooldownOver = true;
     private float m_jumpForce = 10.0f;
 
-    // Player health, death, respawn
+    // Player health, death, re-spawn
     private Health m_health;
     public Health Health { get => m_health; }
     private bool m_isDead = false;
@@ -67,6 +67,11 @@ public class FPS_Controller : MonoBehaviour
         }
 
         if (m_playerInCooldown)
+        {
+            return;
+        }
+
+        if (UI_InGameMenu.IsActive)
         {
             return;
         }
@@ -238,8 +243,6 @@ public class FPS_Controller : MonoBehaviour
             }
         }
 
-        g = gravity;
-
         m_rigidBody.AddForce(m_upVector * gravity);
     }
     private void UpdateJump()
@@ -278,6 +281,12 @@ public class FPS_Controller : MonoBehaviour
     #region non-fix updated functions
     private void UpdateInput()
     {
+        //if (Input.GetAxis("SwitchRocket") > 0)
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            m_gun.NextRocketType();
+        }
+
         // shooting
         if (Input.GetAxis("Fire1") > 0)
         {
@@ -285,9 +294,9 @@ public class FPS_Controller : MonoBehaviour
         }
 
         // planet selection
-        if (Input.GetButtonDown("Fire2"))
+        if (Input.GetButtonDown("SelectPlanet"))
         {
-            // decouppling input from fixedUpdate
+            // decoupling input from fixedUpdate
             m_transitionTriggered = true;
         }
     }

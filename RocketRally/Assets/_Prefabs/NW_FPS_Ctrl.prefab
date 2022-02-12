@@ -33,7 +33,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2928652802358043202}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.6, y: 13.6, z: 78.3}
+  m_LocalPosition: {x: 1.6, y: 13.6, z: 25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 2928652802656617975}
@@ -69,7 +69,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: ac9cafe436d15a74686069b19437a96f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -135,7 +135,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_startHp: 100
   m_maxHp: 100
-  m_currentHp: 0
+  m_currentHp:
+    m_InternalValue: 0
 --- !u!114 &-4374226475365201870
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -148,9 +149,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e14f6a8dd22826f49ba284437a75a5a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_fpsCtrl: {fileID: 0}
-  m_netObj: {fileID: 0}
-  m_gun: {fileID: 0}
 --- !u!114 &2928652802358043224
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -163,6 +161,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea2c23fd6c557644485d1b31a943ef2c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  g: 0
   planetOnlyMask:
     serializedVersion: 2
     m_Bits: 4096
@@ -529,6 +528,7 @@ MonoBehaviour:
   m_stdRocketPrefab: {fileID: 5679803777271881175, guid: ef6e31429444b2941986a7e8e0b97168,
     type: 3}
   muzzle: {fileID: 2928652802540223594}
+  m_fpsController: {fileID: 0}
 --- !u!1 &2928652804053499463
 GameObject:
   m_ObjectHideFlags: 0
@@ -715,7 +715,7 @@ PrefabInstance:
     - target: {fileID: 2300000, guid: 1edb8ded4ded9484baaba5b127e77eac, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 0437701f8f91f7a468322fc69027db3a, type: 2}
+      objectReference: {fileID: 2100000, guid: ed2044fe424fc884ba10601beb688caf, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1edb8ded4ded9484baaba5b127e77eac, type: 3}
 --- !u!4 &2928652803142517637 stripped

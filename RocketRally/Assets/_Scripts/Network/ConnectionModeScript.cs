@@ -15,7 +15,10 @@ using TMPro;
 /// </summary>
 public class ConnectionModeScript : MonoBehaviour
 {
-    public static string PlayerName = "unnamed";
+    private string UNSET_STRING = "#^*unset_string";
+
+    public static string PlayerName = "#^*unset_string";
+    public string PlayerUID = string.Empty;
 
     [SerializeField]
     private Camera m_menuCamera;
@@ -36,15 +39,6 @@ public class ConnectionModeScript : MonoBehaviour
 
     [HideInInspector]
     public string RelayJoinCode { get; set; }
-
-    //internal void SetCommandLineHandler(CommandLineProcessor commandLineProcessor)
-    //{
-    //    m_CommandLineProcessor = commandLineProcessor;
-    //    if (m_CommandLineProcessor.AutoConnectEnabled())
-    //    {
-    //        StartCoroutine(WaitForNetworkManager());
-    //    }
-    //}
 
     public delegate void OnNotifyConnectionEventDelegateHandler();
 
@@ -106,6 +100,16 @@ public class ConnectionModeScript : MonoBehaviour
                 m_JoinCodeInput.SetActive(false);
                 m_AuthenticationButtons.SetActive(false);
                 m_ConnectionModeButtons.SetActive(NetworkManager.Singleton && !NetworkManager.Singleton.IsListening);
+            }
+        }
+
+        if (PlayerName != UNSET_STRING)
+        {
+            TMP_InputField n = GetComponentInChildren<TMP_InputField>();
+
+            if (n != null)
+            {
+                n.text = PlayerName;
             }
         }
     }
@@ -188,40 +192,6 @@ public class ConnectionModeScript : MonoBehaviour
         print("Server Started");
     }
 
-
-    /// <summary>
-    /// Coroutine that handles starting MLAPI in server mode if Relay is enabled
-    /// </summary>
-//    private IEnumerator StartRelayServer(Action postAllocationAction)
-//    {
-//#if ENABLE_RELAY_SERVICE
-//        m_ConnectionModeButtons.SetActive(false);
-
-//        var serverRelayUtilityTask = RelayUtility.AllocateRelayServerAndGetJoinCode(m_MaxConnections);
-//        while (!serverRelayUtilityTask.IsCompleted)
-//        {
-//            yield return null;
-//        }
-//        if (serverRelayUtilityTask.IsFaulted)
-//        {
-//            Debug.LogError("Exception thrown when attempting to start Relay Server. Server not started. Exception: " + serverRelayUtilityTask.Exception.Message);
-//            yield break;
-//        }
-
-//        var (ipv4address, port, allocationIdBytes, connectionData, key, joinCode) = serverRelayUtilityTask.Result;
-
-//        RelayJoinCode = joinCode;
-
-//        //When starting a relay server, both instances of connection data are identical.
-//        NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(ipv4address, port, allocationIdBytes, key, connectionData);
-
-//        postAllocationAction();
-//#else
-//        yield return null;
-//#endif
-//    }
-
-
     /// <summary>
     /// Handles starting netcode in host mode
     /// </summary>
@@ -274,10 +244,20 @@ public class ConnectionModeScript : MonoBehaviour
         OnNotifyConnectionEventClient?.Invoke();
 
         TMP_InputField n = GetComponentInChildren<TMP_InputField>();
+
         if (n != null)
         {
-            PlayerName = n.text;
+            if (n.text == string.Empty)
+            {
+                PlayerName = "Pal-" + Random.Range(1000, 9999);
+            }
+            else
+            {
+                PlayerName = n.text;
+            }
         }
+
+        PlayerUID = SystemInfo.deviceUniqueIdentifier;
 
         m_ConnectionModeButtons.SetActive(false);
     }

@@ -80,12 +80,37 @@ public class GameManager : NetworkBehaviour
             print("ClientDisconnected: " + obj);
             NW_PlayerScript.Instance.PlayerKilled -= OnPlayerKilled;
         }
+        if(IsClient)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            NW_PlayerScript.Instance.RestartClient();
+        }
     }
 
     private void OnPlayerKilled(ulong victimId, ulong killerId)
     {
         print("OnPlayerKilled " + victimId + " by " + killerId);
         PlayerKilled(victimId, killerId);
+    }
+    private void AddEntriesIfNotExists(ulong playerId, string playerName)
+    {
+        if (!m_playerScoreDict.ContainsKey(playerId))
+        {
+            if (playerName == string.Empty)
+            {
+                playerName = " Rocketeer #" + playerId;
+            }
+
+            m_playerScoreDict.Add(playerId, new PlayerScoreData(playerName, 0, 0, 0));
+        }
+    }
+
+    private void SendAllScoreData()
+    {
+        foreach (KeyValuePair<ulong, PlayerScoreData> psd in m_playerScoreDict)
+        {
+            AllScoreClientRpc(psd.Key, psd.Value.name, psd.Value.deaths, psd.Value.kills, psd.Value.score);
+        }
     }
 
     public PlayerScoreData GetPlayerData(ulong playerId)
@@ -124,28 +149,12 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    private void AddEntriesIfNotExists(ulong playerId, string playerName)
+    public void ServerRestart()
     {
-        if (!m_playerScoreDict.ContainsKey(playerId))
-        {
-            if (playerName == string.Empty)
-            {
-                playerName = " Rocketeer #" + playerId;
-            }
-
-            m_playerScoreDict.Add(playerId, new PlayerScoreData(playerName, 0, 0, 0));
-        }
+        StopAllCoroutines();
     }
 
-    private void SendAllScoreData()
-    {
-        foreach (KeyValuePair<ulong, PlayerScoreData> psd in m_playerScoreDict)
-        {
-            AllScoreClientRpc(psd.Key, psd.Value.name, psd.Value.deaths, psd.Value.kills, psd.Value.score);
-        }
-    }
-
-    #region newtorking
+    #region networking
     [ServerRpc]
     private void SendPlayerIdNameMappingServerRpc(ulong playerId, string playerName)
     {

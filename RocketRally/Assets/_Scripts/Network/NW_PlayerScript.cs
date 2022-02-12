@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class NW_PlayerScript : NetworkBehaviour
 {
@@ -96,16 +97,16 @@ public class NW_PlayerScript : NetworkBehaviour
 
         PlayerKilled?.Invoke(m_netObj.OwnerClientId, dmgDealerId);
     }
-    public void FireNetworkedRocket(Vector3 pos, Vector3 rot, float initVelocity, ulong ownerId)
+    public void FireNetworkedRocket(int rocketType, Vector3 pos, Vector3 rot, float initVelocity, ulong ownerId)
     {
         print(System.Reflection.MethodBase.GetCurrentMethod().Name);
         if (NetworkManager.Singleton.IsServer)
         {
-            FireClientRpc(pos, rot, initVelocity, ownerId);
+            FireClientRpc(rocketType, pos, rot, initVelocity, ownerId);
         }
         else if (m_netObj.IsLocalPlayer)
         {
-            FireServerRpc(pos, rot, initVelocity, ownerId);
+            FireServerRpc(rocketType, pos, rot, initVelocity, ownerId);
         }
     }
     public void Detonate(ulong ownerId, Vector3 pos, float maxRange, float maxDamage)
@@ -126,10 +127,62 @@ public class NW_PlayerScript : NetworkBehaviour
     }
     #endregion
 
-    #region Netwrok Functions
+    #region Network Functions
+    // restart handling ---------------------------------------
+    public void RestartClient()
+    {
+        GameManager gm = FindObjectOfType<GameManager>();
+        if (gm != null)
+        {
+            gm.ServerRestart();
+        }
+
+        NetworkManager.Singleton.Shutdown();
+        Destroy(NetworkManager.Singleton.gameObject);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+    public void RestartServerAndClient()
+    {
+        print("Client: Restart Server");
+
+        StartCoroutine(RestartServerAndClientSequence());
+    }
+    private IEnumerator RestartServerAndClientSequence()
+    {
+        GameManager gm = FindObjectOfType<GameManager>();
+        if (gm != null)
+        {
+            gm.ServerRestart();
+        }
+        RestartServerRpc();
+        yield return null;
+        yield return null;
+
+        NetworkManager.Singleton.Shutdown();
+        Destroy(NetworkManager.Singleton.gameObject);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+    [ServerRpc]
+    public void RestartServerRpc()
+    {
+        print("Server: Restart Server");
+        
+        GameManager gm = FindObjectOfType<GameManager>();
+        if (gm != null)
+        {
+            gm.ServerRestart();
+        }
+
+        NetworkManager.Singleton.Shutdown();
+        Destroy(NetworkManager.Singleton.gameObject);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+    // --------------------------------------------------------
+
     [ServerRpc]
     public void RevivePlayerServerRpc()
     {
+        print("REVIVE");
         m_health.Revive();
     }
     [ClientRpc]
@@ -145,19 +198,38 @@ public class NW_PlayerScript : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void FireClientRpc(Vector3 pos, Vector3 rot, float initVelocity, ulong ownerNetId)
+    public void FireClientRpc(int rocketType, Vector3 pos, Vector3 rot, float initVelocity, ulong ownerNetId)
     {
         print(System.Reflection.MethodBase.GetCurrentMethod().Name);
-        Rocket r = Instantiate(m_gun.m_stdRocketPrefab, pos, Quaternion.Euler(rot));
-        r.Fire(initVelocity, ownerNetId);
-        NetworkObject no = r.GetComponent<NetworkObject>();
-        no.Spawn(true);
+        FireRocket(rocketType, pos, rot, initVelocity, ownerNetId); 
+        //Rocket r = Instantiate(m_gun.m_stdRocketPrefab, pos, Quaternion.Euler(rot));
+        //r.Fire(initVelocity, ownerNetId);
+        //NetworkObject no = r.GetComponent<NetworkObject>();
+        //no.Spawn(true);
     }
     [ServerRpc]
-    public void FireServerRpc(Vector3 pos, Vector3 rot, float initVelocity, ulong ownerNetId)
+    public void FireServerRpc(int rocketType, Vector3 pos, Vector3 rot, float initVelocity, ulong ownerNetId)
     {
-        //print(System.Reflection.MethodBase.GetCurrentMethod().Name);
-        Rocket r = Instantiate(m_gun.m_stdRocketPrefab, pos, Quaternion.Euler(rot));
+        print(System.Reflection.MethodBase.GetCurrentMethod().Name);
+        FireRocket(rocketType, pos, rot, initVelocity, ownerNetId);
+        //Rocket r = Instantiate(m_gun.m_stdRocketPrefab, pos, Quaternion.Euler(rot));
+        //r.Fire(initVelocity, ownerNetId);
+        //NetworkObject no = r.GetComponent<NetworkObject>();
+        //no.Spawn(true);
+    }
+
+    private void FireRocket(int rocketType, Vector3 pos, Vector3 rot, float initVelocity, ulong ownerNetId)
+    {
+        Rocket r;
+        if (rocketType == (int)Gun.RocketType.Gravity)
+        {
+            r = Instantiate(m_gun.m_gravityRocketPrefab, pos, Quaternion.Euler(rot));
+        }
+        else
+        {
+            r = Instantiate(m_gun.m_stdRocketPrefab, pos, Quaternion.Euler(rot));
+        }
+
         r.Fire(initVelocity, ownerNetId);
         NetworkObject no = r.GetComponent<NetworkObject>();
         no.Spawn(true);

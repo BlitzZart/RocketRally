@@ -20,12 +20,15 @@ public class UI_ScoreTable : MonoBehaviour
     }
     private void OnDestroy()
     {
-        m_gameManager.ScoreChanged -= OnScoreChanged;
+        if (m_gameManager != null)
+        {
+            m_gameManager.ScoreChanged -= OnScoreChanged;
+        }
     }
 
     private void OnScoreChanged(ulong victimId, ulong killerId)
     {
-        print("OnScoreChanged victime: " + victimId + " killer: " + killerId);
+        print("OnScoreChanged victim: " + victimId + " killer: " + killerId);
         GameManager.PlayerScoreData victimData = m_gameManager.GetPlayerData(victimId);
         GameManager.PlayerScoreData killerData = m_gameManager.GetPlayerData(killerId);
 

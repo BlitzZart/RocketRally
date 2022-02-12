@@ -36,13 +36,14 @@ public class Health : NetworkBehaviour
         }
     }
 
-    private void OnDisable()
+    public override void OnDestroy()
     {
+        base.OnDestroy();
         m_currentHp.OnValueChanged -= OnNwHealthChanged;
-        if (NetworkManager.Singleton.IsServer)
-        {
+        //if (NetworkManager.Singleton.IsServer)
+        //{
             Detonator.Detonated -= OnDetonated;
-        }
+        //}
     }
 
     private void OnNwHealthChanged(float previousValue, float newValue)

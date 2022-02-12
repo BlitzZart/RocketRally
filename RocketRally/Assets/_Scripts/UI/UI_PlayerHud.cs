@@ -8,7 +8,7 @@ public class UI_PlayerHud : MonoBehaviour
 
     [SerializeField] TextMeshProUGUI m_joinCooldownTxt;
 
-    [SerializeField] TextMeshProUGUI m_healthTxt;
+    [SerializeField] TextMeshProUGUI m_healthTxt, m_powerTxt;
 
     private void Awake()
     {
@@ -38,6 +38,8 @@ public class UI_PlayerHud : MonoBehaviour
                 m_joinCooldownTxt.text = m_player.RemainungRespawnTime.ToString("0.0");
             }
         }
+
+
     }
 
     public void PlayerReady(FPS_Controller player)
@@ -51,6 +53,11 @@ public class UI_PlayerHud : MonoBehaviour
         m_player.Health.PlayerHealthChanged += (hp) =>
         {
             m_healthTxt.text = hp.ToString("0");
+        };
+
+        m_player.Gun.PowerChanged += (pwr) =>
+        {
+            m_powerTxt.text = pwr.ToString("0");
         };
     }
 }
