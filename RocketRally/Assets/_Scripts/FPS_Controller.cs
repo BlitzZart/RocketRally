@@ -307,7 +307,7 @@ public class FPS_Controller : MonoBehaviour
             return;
         }
 
-        float headPitch = -Input.GetAxis("Mouse Y") * m_mouseSensitivity/* * Time.deltaTime*/;
+        float headPitch = -Input.GetAxis("Mouse Y") * m_mouseSensitivity * Time.deltaTime;
         m_head.transform.Rotate(headPitch, 0, 0);
 
         m_head.transform.localRotation = Quaternion.Slerp(m_head.transform.localRotation, Quaternion.Euler(m_head.transform.localRotation.eulerAngles.x, 0, 0), 0.01f * Time.fixedTime);
@@ -315,7 +315,7 @@ public class FPS_Controller : MonoBehaviour
     private void UpdateMovement()
     {
         Vector3 moveDirection = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
-        float yaw = Input.GetAxis("Mouse X") * m_mouseSensitivity /** Time.deltaTime*/;
+        float yaw = Input.GetAxis("Mouse X") * m_mouseSensitivity * Time.deltaTime;
 
         float speed = m_walkSpeed;
         if (Input.GetAxis("Run") > 0) { speed = m_runSpeed; }

@@ -342,7 +342,7 @@ MonoBehaviour:
     m_Bits: 4096
   currentPlanet: {fileID: 0}
   m_body: {fileID: 3578602122814742571}
-  m_mouseSensitivity: 5
+  m_mouseSensitivity: 1000
   m_walkSpeed: 7
   m_runSpeed: 13
 --- !u!1 &3578602123233106359
@@ -419,9 +419,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1eede15198f6d124491dc04f4fdecb03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rocketPrefab: {fileID: 5679803777271881175, guid: 5165e355239c6ae49930177ed0747033,
-    type: 3}
+  _rocketType: 0
+  m_gravityRocketPrefab: {fileID: 0}
+  m_stdRocketPrefab: {fileID: 0}
   muzzle: {fileID: 3578602123233106358}
+  m_fpsController: {fileID: 0}
 --- !u!1 &3578602123808955291
 GameObject:
   m_ObjectHideFlags: 0

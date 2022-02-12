@@ -161,13 +161,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea2c23fd6c557644485d1b31a943ef2c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  g: 0
   planetOnlyMask:
     serializedVersion: 2
     m_Bits: 4096
   currentPlanet: {fileID: 0}
   m_body: {fileID: 2928652802656617975}
-  m_mouseSensitivity: 10
+  m_mouseSensitivity: 150
   m_walkSpeed: 7
   m_runSpeed: 13
 --- !u!114 &6498948186665460791
@@ -523,6 +522,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1eede15198f6d124491dc04f4fdecb03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _rocketType: 0
   m_gravityRocketPrefab: {fileID: 5679803777271881175, guid: 5165e355239c6ae49930177ed0747033,
     type: 3}
   m_stdRocketPrefab: {fileID: 5679803777271881175, guid: ef6e31429444b2941986a7e8e0b97168,
