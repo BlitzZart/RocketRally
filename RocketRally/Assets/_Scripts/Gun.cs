@@ -30,6 +30,8 @@ public class Gun : MonoBehaviour
     private float m_power = 100.0f;
     private float m_powerUpSpeed = 10;
 
+    public float Power { get => m_power; }
+
     private void OnEnable()
     {
         m_fpsController = transform.root.GetComponent<FPS_Controller>();

@@ -59,5 +59,11 @@ public class UI_PlayerHud : MonoBehaviour
         {
             m_powerTxt.text = pwr.ToString("0");
         };
+
+        UI_PowerArc pa = GetComponentInChildren<UI_PowerArc>();
+        if (pa)
+        {
+            pa.PlayerReady(player);
+        }
     }
 }

@@ -31,6 +31,7 @@ public class NW_PlayerScript : NetworkBehaviour
     private FPS_Controller m_fpsCtrl;
     private NetworkObject m_netObj;
     private Gun m_gun;
+    public float Power { get => m_gun.Power; }
 
     private Health m_health;
     public Health Health { get => m_health; }
