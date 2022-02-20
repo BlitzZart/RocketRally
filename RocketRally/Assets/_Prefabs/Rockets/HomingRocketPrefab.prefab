@@ -19,7 +19,7 @@ GameObject:
   - component: {fileID: -7819163575839535513}
   - component: {fileID: 7646378335310312250}
   m_Layer: 15
-  m_Name: RocketPrefabGravity
+  m_Name: HomingRocketPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -115,7 +115,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b062d9da4c1d6d542be5f23414c1829a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_force: 75
+  m_force: 10
   m_trailPrefab: {fileID: 2227384436480586607, guid: 056f7ea0fa5ac134293452f33b7e728e,
     type: 3}
   m_maxDamage: 50
@@ -150,6 +150,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02e2d26475020eb4ca556438179879e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_gravityType: 2
+  m_singlePlayerGravityStrength: 5
   m_effectMultiplier: 5
 --- !u!114 &6053387404499573795
 MonoBehaviour:

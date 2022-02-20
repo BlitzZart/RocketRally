@@ -12,7 +12,7 @@ public class Planet : MonoBehaviour
 
     private void Start()
     {
-        mass = m_massBase * transform.localScale.x;
+        //mass = m_massBase * transform.localScale.x;
     }
 
     private void Remesh()

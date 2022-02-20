@@ -8,6 +8,10 @@ public class FPS_Controller : MonoBehaviour
 
     // Planet transition
     public LayerMask planetOnlyMask;
+    public LayerMask playerOnlyMask;
+
+    [SerializeField] private Transform m_lockedTarget;
+
     public Planet currentPlanet;
     private Transform m_planetTransform;
     private bool m_transitionTriggered = false;
@@ -27,6 +31,9 @@ public class FPS_Controller : MonoBehaviour
     private Feet m_feet;
     private Gun m_gun;
     public Gun Gun { get => m_gun; }
+
+    // weapon usage
+    [SerializeField] private bool m_gunTriggerPressed;
 
     private Vector3 m_headPosition;
     private Vector3 m_upVector;
@@ -175,16 +182,22 @@ public class FPS_Controller : MonoBehaviour
     #endregion
 
     #region fixed updated functions
+    private RaycastHit GetRaycastHitInfo(LayerMask mask)
+    {
+        RaycastHit hitInfo;
+        Ray ray = new Ray(m_head.transform.position, m_head.transform.forward);
+        Physics.Raycast(ray, out hitInfo, 1000, mask);
+
+        Debug.DrawRay(ray.origin, ray.direction * 1000, Color.green, 0.5f);
+
+        return hitInfo;
+    }
     private void UpdatePlanetSelection()
     {
         if (m_transitionTriggered)
         {
             m_transitionTriggered = false;
-            RaycastHit hitInfo;
-            Ray ray = new Ray(m_head.transform.position, m_head.transform.forward);
-            Physics.Raycast(ray, out hitInfo, 1000, planetOnlyMask);
-
-            Debug.DrawRay(ray.origin, ray.direction * 1000, Color.green, 0.5f);
+            RaycastHit hitInfo = GetRaycastHitInfo(planetOnlyMask);
 
             if (hitInfo.transform != null && hitInfo.transform.root != currentPlanet?.transform.root)
             {
@@ -290,7 +303,21 @@ public class FPS_Controller : MonoBehaviour
         // shooting
         if (Input.GetAxis("Fire1") > 0)
         {
-            m_gun.Fire();
+            UpdateLockedTarget(GetRaycastHitInfo(planetOnlyMask));
+            if (!m_gunTriggerPressed)
+            {
+                m_gun.Fire(true);
+            }
+            m_gunTriggerPressed = true;
+        }
+        else
+        {
+            if (m_gunTriggerPressed)
+            {
+                m_gun.Fire(false, m_lockedTarget);
+            }
+            m_lockedTarget = null;
+            m_gunTriggerPressed = false;
         }
 
         // planet selection
@@ -331,6 +358,13 @@ public class FPS_Controller : MonoBehaviour
     #endregion
 
     #region private
+    private void UpdateLockedTarget(RaycastHit raycastInfo)
+    {
+        if (raycastInfo.transform != null)
+        {
+            m_lockedTarget = raycastInfo.transform;
+        }
+    }
     private IEnumerator JumpCoolDown()
     {
         yield return new WaitForSeconds(m_jumpCooldown);   

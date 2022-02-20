@@ -118,12 +118,18 @@ public class Rocket : NetworkBehaviour
         m_trail.position = transform.position;
     }
 
-    public void Fire(float initVelocity, ulong ownerId, bool locallyInstantiated = false)
+    public void Fire(float initVelocity, ulong ownerId, Transform personalTarge = null, bool locallyInstantiated = false)
     {
         m_localInstantiated = locallyInstantiated;
-        AutoGravity ag = GetComponent<AutoGravity>();
+        AutoGravity ag = GetComponentInChildren<AutoGravity>();
         if (ag != null)
         {
+            // we only need to set our target on the server here
+            if (!locallyInstantiated && personalTarge != null)
+            {
+                ag.SetTarget(personalTarge);
+            }
+
             ag.Activate();
         }
 

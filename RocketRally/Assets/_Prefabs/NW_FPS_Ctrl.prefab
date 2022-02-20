@@ -164,8 +164,13 @@ MonoBehaviour:
   planetOnlyMask:
     serializedVersion: 2
     m_Bits: 4096
+  playerOnlyMask:
+    serializedVersion: 2
+    m_Bits: 8192
+  m_lockedTarget: {fileID: 0}
   currentPlanet: {fileID: 0}
   m_body: {fileID: 2928652802656617975}
+  m_gunTriggerPressed: 0
   m_mouseSensitivity: 200
   m_walkSpeed: 7
   m_runSpeed: 13
@@ -523,7 +528,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _rocketType: 0
-  m_gravityRocketPrefab: {fileID: 5679803777271881175, guid: 5165e355239c6ae49930177ed0747033,
+  m_homingRocketPrefab: {fileID: 5679803777271881175, guid: cbe198d8309614b42bfae733c598d291,
+    type: 3}
+  m_personalGravityRocketPrefab: {fileID: 5679803777271881175, guid: 5165e355239c6ae49930177ed0747033,
+    type: 3}
+  m_globalGravityRocketPrefab: {fileID: 5679803777271881175, guid: d56540b3e33c0434199caa76364a7505,
     type: 3}
   m_stdRocketPrefab: {fileID: 5679803777271881175, guid: ef6e31429444b2941986a7e8e0b97168,
     type: 3}

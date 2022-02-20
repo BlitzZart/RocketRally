@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,9 +7,10 @@ using UnityEngine.UI;
 public class UI_PowerArc : MonoBehaviour
 {
     private float _minArcMax = 10.0f / 100.0f;
-    private float _medArcMax = 20.0f / 100.0f;
+    private float _medArcMax = 0.0f;// 20.0f / 100.0f; // UNUSED
 
     private Image[] _arcs;
+    private Gun _gun;
 
     private void Start()
     {
@@ -17,7 +19,18 @@ public class UI_PowerArc : MonoBehaviour
 
     public void PlayerReady(FPS_Controller player)
     {
-        player.Gun.PowerChanged += OnPowerChanged;
+        _gun = player.Gun;
+        _gun.PowerChanged += OnPowerChanged;
+        _gun.RocketTypeChanged += OnRocketTypeChagned;
+
+        OnRocketTypeChagned(_gun.CurrentRocketType);
+    }
+
+    private void OnRocketTypeChagned(Gun.RocketType obj)
+    {
+        _minArcMax = _gun.CurrentPowerCost / 100.0f;
+
+        OnPowerChanged(_gun.Power);
     }
 
     private void OnPowerChanged(float pwr)
