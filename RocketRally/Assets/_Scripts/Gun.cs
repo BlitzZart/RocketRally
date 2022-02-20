@@ -77,9 +77,8 @@ public class Gun : MonoBehaviour
         }
         m_ready = false;
 
-        if (triggerDown && 
-            (_rocketType == RocketType.PersonalGravity))// ||
-            //_rocketType == RocketType.Homing))
+        if (triggerDown && _rocketType == RocketType.PersonalGravity ||
+            !triggerDown && _rocketType == RocketType.Simple)
         {
             return;
         }
