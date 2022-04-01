@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class FPS_Controller : MonoBehaviour
@@ -130,10 +131,16 @@ public class FPS_Controller : MonoBehaviour
 
             m_headPosition = m_head.transform.localPosition;
 
-            if (currentPlanet == null)
-            {
-                currentPlanet = GameObject.Find("Earth").GetComponent<Planet>();
-            }
+            KeyValuePair<Planet, Vector3> spawn = PlanetManager.Instance.GetRandomSpawnPoint();
+            transform.position = spawn.Value;
+            currentPlanet = spawn.Key;
+
+            m_transitionTriggered = true;
+
+            //if (currentPlanet == null)
+            //{
+            //    currentPlanet = GameObject.Find("Earth").GetComponent<Planet>();
+            //}
             m_planetTransform = currentPlanet.transform;
             m_lastPlanetsPosition = m_planetTransform.position;
 

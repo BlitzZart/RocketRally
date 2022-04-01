@@ -43,6 +43,8 @@ public class NW_PlayerScript : NetworkBehaviour
         m_health = GetComponent<Health>();
 
         m_health.PlayerDied += OnPlayerDied;
+
+
     }
 
     public override void OnDestroy()
@@ -128,7 +130,7 @@ public class NW_PlayerScript : NetworkBehaviour
     }
     #endregion
 
-    #region Network Functions
+    #region network functions
     // restart handling ---------------------------------------
     public void RestartClient()
     {

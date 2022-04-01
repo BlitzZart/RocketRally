@@ -15,4 +15,10 @@ public class PlanetManager : Util.Singleton<PlanetManager>
         Planet[] ps = FindObjectsOfType<Planet>();
         m_plantes = new List<Planet>(ps);
     }
+
+    public KeyValuePair<Planet, Vector3> GetRandomSpawnPoint()
+    {
+        Planet p = m_plantes[Random.Range(0, m_plantes.Count)];
+        return new KeyValuePair<Planet, Vector3>(p, p.GetRandomSpawnPoint());
+    }
 }

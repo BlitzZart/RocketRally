@@ -60,24 +60,26 @@ public class GameManager : NetworkBehaviour
         }
         else
         {
-            StartCoroutine(WaitForOwnership());
+            StartCoroutine(WaitForOwnershipAndAddToScoreSystem());
+
         }
     }
 
-    private IEnumerator WaitForOwnership()
+    private IEnumerator WaitForOwnershipAndAddToScoreSystem()
     {
         NetworkObject no = GetComponent<NetworkObject>();
 
-        yield return new WaitUntil(() => no.OwnerClientId == NetworkManager.Singleton.LocalClientId);
+        ulong playerId = NetworkManager.Singleton.LocalClientId;
+
+        yield return new WaitUntil(() => no.OwnerClientId == playerId);
         // propagate playerId/playerName mapping to server
-        SendPlayerIdNameMappingServerRpc(NetworkManager.Singleton.LocalClientId, ConnectionModeScript.PlayerName);
+        SendPlayerIdNameMappingServerRpc(playerId, ConnectionModeScript.PlayerName);
     }
 
     private void OnClientDisconnected(ulong obj)
     {
         if (NetworkManager.Singleton.IsServer)
         {
-            print("ClientDisconnected: " + obj);
             NW_PlayerScript.Instance.PlayerKilled -= OnPlayerKilled;
         }
         if(IsClient)
@@ -101,7 +103,12 @@ public class GameManager : NetworkBehaviour
                 playerName = " Rocketeer #" + playerId;
             }
 
+            print("Added: " + playerId + " = " + playerName);
+
             m_playerScoreDict.Add(playerId, new PlayerScoreData(playerName, 0, 0, 0));
+
+            // propagate - so ui can add it
+            ScoreChanged?.Invoke(ulong.MaxValue, playerId);
         }
     }
 
@@ -115,6 +122,10 @@ public class GameManager : NetworkBehaviour
 
     public PlayerScoreData GetPlayerData(ulong playerId)
     {
+        if (playerId == ulong.MaxValue)
+        {
+            return null;
+        }
         return m_playerScoreDict[playerId];
     }
 
@@ -167,12 +178,14 @@ public class GameManager : NetworkBehaviour
     [ClientRpc]
     private void SendPlayerIdNameMappingClientRpc(ulong playerId, string playerName)
     {
+        print("SendPlayerIdNameMappingClientRpc");
         AddEntriesIfNotExists(playerId, playerName);
     }
 
     [ClientRpc]
     private void AllScoreClientRpc(ulong playerId, string playerName, int deaths, int kills, int score)
     {
+        print("AllScoreClientRpc");
         AddEntriesIfNotExists(playerId, playerName);
         PlayerScoreData p = m_playerScoreDict[playerId];
         p.name = playerName;
