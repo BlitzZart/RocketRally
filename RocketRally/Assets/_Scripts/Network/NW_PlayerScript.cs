@@ -119,6 +119,13 @@ public class NW_PlayerScript : NetworkBehaviour
         print("Detonate");
         if (NetworkManager.Singleton.IsServer)
         {
+            print("Detonate-Server");
+
+            // only call client rpc if clients are connected
+            if (NetworkManager.Singleton.ConnectedClients.Count == 0)
+            {
+                return;
+            }
             DetonateClientRpc(ownerId, pos, maxRange, maxDamage);
             // with zero damage and zero range to visualize on server
             // pointless on headless sever!
@@ -127,6 +134,7 @@ public class NW_PlayerScript : NetworkBehaviour
         }
         else if (m_netObj.IsLocalPlayer)
         {
+            print("Detonate-Clients");
             DetonateServerRpc(ownerId, pos, maxRange, maxDamage);
         }
     }
@@ -165,8 +173,11 @@ public class NW_PlayerScript : NetworkBehaviour
         yield return null;
         yield return new WaitForSeconds(0.1f);
 
-        NetworkManager.Singleton.Shutdown();
-        Destroy(NetworkManager.Singleton.gameObject);
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.Shutdown();
+            Destroy(NetworkManager.Singleton.gameObject);
+        }
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
     [ServerRpc]

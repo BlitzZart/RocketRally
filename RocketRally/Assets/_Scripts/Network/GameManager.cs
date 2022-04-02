@@ -103,7 +103,6 @@ public class GameManager : NetworkBehaviour
         ulong playerId = NetworkManager.Singleton.LocalClientId;
 
         yield return new WaitUntil(() => no.OwnerClientId == playerId);
-        print("WaitForOwnershipAndAddInitialize DONE");
         string uniqueId = SystemInfo.deviceUniqueIdentifier;
 #if UNITY_EDITOR
         uniqueId = "UnityEditorSession";
@@ -137,7 +136,7 @@ public class GameManager : NetworkBehaviour
             NW_PlayerScript.Instance.PlayerKilled -= OnPlayerKilled;
             if (NetworkManager.ConnectedClients.ContainsKey(obj))
             {
-                print("HAS client " + obj);
+                print("OnClientDisconnected " + obj);
                 //NetworkManager.DisconnectClient(obj);
             }
 
