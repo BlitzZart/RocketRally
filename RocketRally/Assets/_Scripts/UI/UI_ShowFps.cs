@@ -6,8 +6,6 @@ public class UI_ShowFps : MonoBehaviour
 
     private void Awake()
     {
-        // TODO: Application.targetFrameRate to somewhere where it makes sense
-        Application.targetFrameRate = 100;
         m_text = GetComponent<TMPro.TextMeshProUGUI>();
     }
 
