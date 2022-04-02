@@ -4,11 +4,19 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : NetworkBehaviour
 {
+    public NetworkVariable<int> ServerRestartInS = new NetworkVariable<int>();
+
     public Dictionary<string, ulong> UniqueIdNetworkIdMap = new Dictionary<string, ulong>();
     public List<PlayerScoreData> RankingList = new List<PlayerScoreData>();
+
+
+    private bool m_autoRestartCountdownIsRunning = false;
+    private int m_autoRestartIntervalInS = 20;//360;
+    private int m_autoRestartCurrentTimeInS = 0;
 
     [Serializable]
     public class PlayerScoreData : IComparable<PlayerScoreData>
@@ -70,11 +78,12 @@ public class GameManager : NetworkBehaviour
             no.ChangeOwnership(obj);
 
             SendAllScoreData();
+
+            UpdateAutoRestart();
         }
         else
         {
             StartCoroutine(WaitForOwnershipAndAddInitialize());
-
         }
     }
 
@@ -117,11 +126,79 @@ public class GameManager : NetworkBehaviour
         if (NetworkManager.Singleton.IsServer)
         {
             NW_PlayerScript.Instance.PlayerKilled -= OnPlayerKilled;
+            if (NetworkManager.ConnectedClients.ContainsKey(obj))
+            {
+                NetworkManager.DisconnectClient(obj);
+            }
+
+            RestartServerIfAllPlayersLeft();
         }
         if(IsClient)
         {
             Cursor.lockState = CursorLockMode.None;
             NW_PlayerScript.Instance.RestartClient();
+        }
+    }
+
+    private void UpdateAutoRestart()
+    {
+        if (NetworkManager.Singleton.ConnectedClients.Count >= 2 &&
+            !m_autoRestartCountdownIsRunning)
+        {
+            m_autoRestartCountdownIsRunning = true;
+            StartCoroutine(AutoRestartServerAfterTime());
+        }
+    }
+
+    private IEnumerator AutoRestartServerAfterTime()
+    {
+        int timeLeft = m_autoRestartIntervalInS;
+        ServerRestartInS.Value = (timeLeft);
+        print("Restart in " + (timeLeft));
+        while (timeLeft > 0)
+        {
+            timeLeft = m_autoRestartIntervalInS - m_autoRestartCurrentTimeInS;
+
+            bool updateVar = false;
+            if (timeLeft <= 10)
+            {
+                updateVar = true;
+            }
+            else if (timeLeft <= 30)
+            {
+                updateVar = timeLeft % 10 == 0;
+            }
+            else if (timeLeft <= 90)
+            {
+                updateVar = timeLeft % 30 == 0;
+            }
+            else
+            {
+                updateVar = timeLeft % 300 == 0;
+            }
+
+            if (updateVar)
+            {
+                ServerRestartInS.Value = (timeLeft);
+                print("Restart in " + (timeLeft));
+            }
+
+            m_autoRestartCurrentTimeInS += 1;
+            yield return new WaitForSeconds(1.0f);
+        }
+
+        //StopAllServerRoutines();
+        RestartServer();
+    }
+
+    private void RestartServerIfAllPlayersLeft()
+    {
+        if (NetworkManager.ConnectedClients.Count < 1)
+        {
+            print("Restart Server because last client just left.");
+
+            //StopAllServerRoutines();
+            RestartServer();
         }
     }
 
@@ -216,12 +293,46 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    public void ServerRestart()
+    public void StopAllServerRoutines()
     {
         StopAllCoroutines();
     }
 
+    public void RestartServer()
+    {
+        RestartClientRpc();
+
+        foreach (var c in NetworkManager.Singleton.ConnectedClients)
+        {
+            NetworkManager.Singleton.DisconnectClient(c.Key);
+        }
+
+        NetworkManager.Singleton.Shutdown();
+        Destroy(NetworkManager.Singleton.gameObject);
+
+        StopAllServerRoutines();
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
     #region networking
+
+    [ClientRpc]
+    public void RestartClientRpc()
+    {
+        print("RestartClientRpc");
+
+        GameManager gm = FindObjectOfType<GameManager>();
+        if (gm != null)
+        {
+            gm.StopAllServerRoutines();
+        }
+
+        NetworkManager.Singleton.Shutdown();
+        Destroy(NetworkManager.Singleton.gameObject);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
     [ServerRpc]
     private void SendUniqueIdServerRpc(string uniqueId)
     {

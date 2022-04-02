@@ -37,7 +37,7 @@ public class Gun : MonoBehaviour
     public RocketType CurrentRocketType { get => _rocketType; }
 
     private bool m_ready = true;
-    private float m_cooldown = 0.2f;
+    private float m_cooldown = 0.05f;
 
     public Rocket m_homingRocketPrefab;
     public Rocket m_personalGravityRocketPrefab;

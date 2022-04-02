@@ -139,7 +139,7 @@ public class NW_PlayerScript : NetworkBehaviour
         GameManager gm = FindObjectOfType<GameManager>();
         if (gm != null)
         {
-            gm.ServerRestart();
+            gm.StopAllServerRoutines();
         }
 
         NetworkManager.Singleton.Shutdown();
@@ -157,7 +157,7 @@ public class NW_PlayerScript : NetworkBehaviour
         GameManager gm = FindObjectOfType<GameManager>();
         if (gm != null)
         {
-            gm.ServerRestart();
+            gm.StopAllServerRoutines();
         }
         RestartServerRpc();
         // delay a little, so the rpc call has a chance to get through before we continue
@@ -177,30 +177,26 @@ public class NW_PlayerScript : NetworkBehaviour
         GameManager gm = FindObjectOfType<GameManager>();
         if (gm != null)
         {
-            gm.ServerRestart();
+            gm.StopAllServerRoutines();
+            gm.RestartServer();
         }
 
-        RestartClientRpc();
-
-        NetworkManager.Singleton.Shutdown();
-        Destroy(NetworkManager.Singleton.gameObject);
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
-    [ClientRpc]
-    public void RestartClientRpc()
-    {
-        print("Server: Restart Client RPC");
+    //[ClientRpc]
+    //public void RestartClientRpc()
+    //{
+    //    print("Server: Restart Client RPC");
 
-        GameManager gm = FindObjectOfType<GameManager>();
-        if (gm != null)
-        {
-            gm.ServerRestart();
-        }
+    //    GameManager gm = FindObjectOfType<GameManager>();
+    //    if (gm != null)
+    //    {
+    //        gm.StopAllServerRoutines();
+    //    }
 
-        NetworkManager.Singleton.Shutdown();
-        Destroy(NetworkManager.Singleton.gameObject);
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-    }
+    //    NetworkManager.Singleton.Shutdown();
+    //    Destroy(NetworkManager.Singleton.gameObject);
+    //    SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    //}
     // --------------------------------------------------------
 
     [ServerRpc]
