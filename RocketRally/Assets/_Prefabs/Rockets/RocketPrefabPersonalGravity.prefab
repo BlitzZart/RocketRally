@@ -119,7 +119,7 @@ MonoBehaviour:
   m_trailPrefab: {fileID: 2227384436480586607, guid: 056f7ea0fa5ac134293452f33b7e728e,
     type: 3}
   m_maxDamage: 50
-  m_maxRange: 10
+  m_maxRange: 20
   m_ownerId:
     m_InternalValue: 0
 --- !u!54 &4553596805691822535

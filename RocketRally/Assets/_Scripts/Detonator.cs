@@ -14,6 +14,9 @@ public class Detonator : MonoBehaviour
         GameObject go = Instantiate(m_explosionPrefab, pos, Quaternion.identity);
         Destroy(go, go.GetComponent<ParticleSystem>().main.duration);
 
+        //exPos = pos;
+        //exMaxRange = maxRange;
+
         if (Detonated != null)
         {
             if (NetworkManager.Singleton.IsServer)
@@ -22,4 +25,13 @@ public class Detonator : MonoBehaviour
             }
         }
     }
+
+    //private Vector3 exPos;
+    //private float exMaxRange;
+
+    //private void OnDrawGizmos()
+    //{
+    //    Gizmos.color = Color.red;
+    //    Gizmos.DrawWireSphere(exPos, exMaxRange);
+    //}
 }
