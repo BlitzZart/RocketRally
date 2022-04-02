@@ -139,7 +139,7 @@ public class NW_PlayerScript : NetworkBehaviour
         GameManager gm = FindObjectOfType<GameManager>();
         if (gm != null)
         {
-            gm.StopAllServerRoutines();
+            gm.StopAllRoutines();
         }
 
         NetworkManager.Singleton.Shutdown();
@@ -157,7 +157,7 @@ public class NW_PlayerScript : NetworkBehaviour
         GameManager gm = FindObjectOfType<GameManager>();
         if (gm != null)
         {
-            gm.StopAllServerRoutines();
+            gm.StopAllRoutines();
         }
         RestartServerRpc();
         // delay a little, so the rpc call has a chance to get through before we continue
@@ -177,7 +177,7 @@ public class NW_PlayerScript : NetworkBehaviour
         GameManager gm = FindObjectOfType<GameManager>();
         if (gm != null)
         {
-            gm.StopAllServerRoutines();
+            gm.StopAllRoutines();
             gm.RestartServer();
         }
 

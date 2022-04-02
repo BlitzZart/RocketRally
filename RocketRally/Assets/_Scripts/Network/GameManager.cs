@@ -2,7 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Collections;
 using Unity.Netcode;
+using Unity.Networking.Transport;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -15,7 +17,7 @@ public class GameManager : NetworkBehaviour
 
 
     private bool m_autoRestartCountdownIsRunning = false;
-    private int m_autoRestartIntervalInS = 20;//360;
+    private int m_autoRestartIntervalInS = 361;
     private int m_autoRestartCurrentTimeInS = 0;
 
     [Serializable]
@@ -48,20 +50,13 @@ public class GameManager : NetworkBehaviour
 
     private void Start()
     {
+        Application.targetFrameRate = 100;
+
         m_playerScoreDict = new Dictionary<string, PlayerScoreData>();
 
         NetworkManager.Singleton.OnServerStarted += OnServerStarted;
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
-
-        if (NetworkManager.Singleton.IsServer)
-        {
-            Application.targetFrameRate = 30;
-        }
-        else
-        {
-            Application.targetFrameRate = 100;
-        }
     }
     private void OnDisable()
     {
@@ -74,7 +69,12 @@ public class GameManager : NetworkBehaviour
 
     private void OnServerStarted()
     {
+        if (NetworkManager.Singleton.IsServer)
+        {
+            Application.targetFrameRate = 30;
+        }
 
+        print("Target FPS = " + Application.targetFrameRate);
     }
     private void OnClientConnected(ulong obj)
     {
@@ -137,7 +137,8 @@ public class GameManager : NetworkBehaviour
             NW_PlayerScript.Instance.PlayerKilled -= OnPlayerKilled;
             if (NetworkManager.ConnectedClients.ContainsKey(obj))
             {
-                NetworkManager.DisconnectClient(obj);
+                print("HAS client " + obj);
+                //NetworkManager.DisconnectClient(obj);
             }
 
             RestartServerIfAllPlayersLeft();
@@ -252,6 +253,7 @@ public class GameManager : NetworkBehaviour
             if (UniqueIdNetworkIdMap.ContainsKey(psd.Key))
             {
                 ulong playerId = UniqueIdNetworkIdMap[psd.Key];
+                print("SendAllScoreData");
                 AllScoreClientRpc(psd.Key, playerId, psd.Value.name, psd.Value.deaths, psd.Value.kills, psd.Value.score);
             }
         }
@@ -302,24 +304,22 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    public void StopAllServerRoutines()
+    public void StopAllRoutines()
     {
         StopAllCoroutines();
     }
 
     public void RestartServer()
     {
-        RestartClientRpc();
-
-        foreach (var c in NetworkManager.Singleton.ConnectedClients)
+        if (NetworkManager.Singleton.ConnectedClients.Count > 0)
         {
-            NetworkManager.Singleton.DisconnectClient(c.Key);
+            RestartClientRpc();
         }
 
         NetworkManager.Singleton.Shutdown();
         Destroy(NetworkManager.Singleton.gameObject);
 
-        StopAllServerRoutines();
+        StopAllRoutines();
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
@@ -334,7 +334,7 @@ public class GameManager : NetworkBehaviour
         GameManager gm = FindObjectOfType<GameManager>();
         if (gm != null)
         {
-            gm.StopAllServerRoutines();
+            gm.StopAllRoutines();
         }
 
         NetworkManager.Singleton.Shutdown();
@@ -351,20 +351,14 @@ public class GameManager : NetworkBehaviour
     [ServerRpc]
     private void SendPlayerIdNameMappingServerRpc(string uniqueId, ulong playerId, string playerName)
     {
-
-        print("> SendPlayerIdNameMappingServerRpc CALL");
-
         NW_PlayerScript.Instance.UniqueId = uniqueId;
         UniqueIdNetworkIdMap[uniqueId] = playerId;
 
         AddEntriesIfNotExists(uniqueId, playerId, playerName);
 
+        print("> SendPlayerIdNameMappingServerRpc " + uniqueId + " = " + playerId + " name = " + playerName);
         // propagate to all clients
         SendPlayerIdNameMappingClientRpc(uniqueId, playerId, playerName);
-
-        print("> SendPlayerIdNameMappingServerRpc " + uniqueId + " = " + playerId);
-
-
     }
 
     [ClientRpc]
