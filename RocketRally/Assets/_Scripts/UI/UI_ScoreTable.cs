@@ -1,11 +1,14 @@
-using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
-using System;
+using UnityEngine;
 
 // TODO: only client
 public class UI_ScoreTable : MonoBehaviour
 {
-    [SerializeField] UI_ScoreEntry m_entryPrefab;
+    [SerializeField] private UI_ScoreEntry m_entryPrefab;
+    [SerializeField] private Color m_colorOthers, m_colorSelf;
+    private bool m_colorsSet = false;
+
 
     private Dictionary<string, UI_ScoreEntry> m_entries;
 
@@ -82,5 +85,42 @@ public class UI_ScoreTable : MonoBehaviour
         kE.UpdateScore(killerData.kills, killerData.deaths, killerData.score);
 
         UpdateRanking();
+        if (!m_colorsSet)
+        {
+            m_colorsSet = true;
+            StartCoroutine(SetColorsWhenPlayerUidIsKnown());
+        }
+    }
+
+
+    private IEnumerator SetColorsWhenPlayerUidIsKnown()
+    {
+        yield return new WaitUntil(() => NW_PlayerScript.Instance != null);
+        yield return new WaitUntil(() => NW_PlayerScript.Instance.UniqueId != string.Empty);
+
+        foreach (var e in m_entries)
+        {
+            if (e.Key == NW_PlayerScript.Instance.UniqueId)
+            {
+                e.Value.SetColor(m_colorSelf);
+            }
+        }
+    }
+
+    private void SetColor(UI_ScoreEntry entry, string uid)
+    {
+        if (IsSelf(uid))
+        {
+            entry.SetColor(m_colorSelf);
+        }
+        else
+        {
+            entry.SetColor(m_colorOthers);
+        }
+    }
+
+    private bool IsSelf(string uid)
+    {
+        return uid == NW_PlayerScript.Instance.UniqueId;
     }
 }

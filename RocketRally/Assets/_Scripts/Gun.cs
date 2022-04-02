@@ -5,6 +5,10 @@ using UnityEngine;
 
 public class Gun : MonoBehaviour
 {
+    [SerializeField]
+    private AudioClip m_readySound, m_depletedSound;
+    private AudioSource m_source;
+
     private float m_simpleRocketCosts = 20;
     private float m_personalGravityRocketCosts = 50;
     private float m_homingRocketCosts = 70;
@@ -54,6 +58,10 @@ public class Gun : MonoBehaviour
 
     public float Power { get => m_power; }
 
+    private void Awake()
+    {
+        m_source = GetComponent<AudioSource>();
+    }
     private void OnEnable()
     {
         m_fpsController = transform.root.GetComponent<FPS_Controller>();
@@ -191,7 +199,13 @@ public class Gun : MonoBehaviour
 
     private bool GunHasEnergy()
     {
-        return m_power >= CurrentPowerCost;
+        bool hasEnergy = m_power >= CurrentPowerCost;
+        if (!hasEnergy)
+        {
+            AudioHelper.PlaySound(m_source, m_depletedSound, 0.5f, 1.15f, 1.17f);
+        }
+
+        return hasEnergy;
     }
 
     private IEnumerator Cooldown()
@@ -204,8 +218,18 @@ public class Gun : MonoBehaviour
     {
         if (m_power < 100.0f)
         {
+            bool wasDepleted = m_power < CurrentPowerCost;
+
             m_power = Mathf.Clamp(m_power + Time.deltaTime * m_powerUpSpeed, 0.0f, 100.0f);
             PowerChanged?.Invoke(m_power);
+
+            if (wasDepleted)
+            {
+                if (m_power >= CurrentPowerCost)
+                {
+                    AudioHelper.PlaySound(m_source, m_readySound, 0.5f, 1.05f, 1.07f);
+                }
+            }
         }
     }
 }

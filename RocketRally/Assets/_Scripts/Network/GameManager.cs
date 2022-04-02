@@ -76,6 +76,7 @@ public class GameManager : NetworkBehaviour
 
         print("Target FPS = " + Application.targetFrameRate);
     }
+
     private void OnClientConnected(ulong obj)
     {
         if (NetworkManager.Singleton.IsServer)
@@ -114,7 +115,7 @@ public class GameManager : NetworkBehaviour
         SendPlayerIdNameMappingServerRpc(uniqueId, playerId, playerName);
 
         // set unique id on server and client
-        //SendUniqueIdServerRpc(SystemInfo.deviceUniqueIdentifier);
+        SendUniqueIdServerRpc(SystemInfo.deviceUniqueIdentifier);
         NW_PlayerScript.Instance.UniqueId = uniqueId;
 
         print("> WaitForOwnershipAndAddInitialize " + uniqueId + " = " + playerId);
@@ -352,6 +353,16 @@ public class GameManager : NetworkBehaviour
     {
         NW_PlayerScript.Instance.UniqueId = uniqueId;
         UniqueIdNetworkIdMap[uniqueId] = playerId;
+
+        int idx = 0;
+
+        NW_PlayerScript[] nwps = FindObjectsOfType<NW_PlayerScript>();
+        foreach (var nwp in nwps)
+        {
+            nwp.SetColorHueClientRpc((idx * 210.0f) % 360);
+            idx++;
+        }
+
 
         AddEntriesIfNotExists(uniqueId, playerId, playerName);
 

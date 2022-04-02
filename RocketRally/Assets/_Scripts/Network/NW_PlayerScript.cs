@@ -45,8 +45,6 @@ public class NW_PlayerScript : NetworkBehaviour
         m_health = GetComponent<Health>();
 
         m_health.PlayerDied += OnPlayerDied;
-
-
     }
 
     public override void OnDestroy()
@@ -298,6 +296,19 @@ public class NW_PlayerScript : NetworkBehaviour
     {
         m_detonator.SpawnDetonation(ownerId, pos, maxRange, maxDamage);
     }
+
+    [ClientRpc]
+    public void SetColorHueClientRpc(float hue)
+    {
+        Renderer r = GetComponent<Renderer>();
+        Material newMaterial = new Material(r.material);
+
+        Color c = Color.HSVToRGB(hue / 360.0f, 0.66f, 1.0f);
+
+        newMaterial.color = c;
+        r.material = newMaterial;
+    }
+
     #endregion
 
     #region private

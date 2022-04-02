@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UI_ScoreEntry : MonoBehaviour
 {
@@ -7,6 +8,15 @@ public class UI_ScoreEntry : MonoBehaviour
     private string m_playerId;
 
     private TextMeshProUGUI m_name, m_kills, m_deaths, m_score;
+
+    public void SetColor(Color c)
+    {
+        Image img = GetComponent<Image>();
+        if (img != null)
+        {
+            img.color = c;
+        }
+    }
 
     public void Initilize(string playerId)
     {
