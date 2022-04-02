@@ -30,7 +30,15 @@ public class UI_ScoreTable : MonoBehaviour
 
     private void UpdateRanking()
     {
+        for (int i = 0; i < m_gameManager.RankingList.Count; i++)
+        {
+            string uid = m_gameManager.RankingList[i].uniqueId;
 
+            if (m_entries.ContainsKey(uid))
+            {
+                m_entries[uid].transform.SetSiblingIndex(i);
+            }
+        }
     }
 
     private void OnNameChanged(string uniqueId)
@@ -72,5 +80,7 @@ public class UI_ScoreTable : MonoBehaviour
 
         UI_ScoreEntry kE = m_entries[killerId];
         kE.UpdateScore(killerData.kills, killerData.deaths, killerData.score);
+
+        UpdateRanking();
     }
 }

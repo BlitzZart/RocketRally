@@ -8,20 +8,29 @@ using UnityEngine;
 public class GameManager : NetworkBehaviour
 {
     public Dictionary<string, ulong> UniqueIdNetworkIdMap = new Dictionary<string, ulong>();
+    public List<PlayerScoreData> RankingList = new List<PlayerScoreData>();
 
-    public class PlayerScoreData
+    [Serializable]
+    public class PlayerScoreData : IComparable<PlayerScoreData>
     {
+        public string uniqueId;
         public string name;
         public int deaths;
         public int kills;
         public int score;
 
-        public PlayerScoreData(string name, int deaths, int kills, int score)
+        public PlayerScoreData(string uniqueId, string name, int deaths, int kills, int score)
         {
+            this.uniqueId = uniqueId;
             this.name = name;
             this.deaths = deaths;
             this.kills = kills;
             this.score = score;
+        }
+
+        public int CompareTo(PlayerScoreData other)
+        {
+            return other.score.CompareTo(score);
         }
     }
     private Dictionary<string, PlayerScoreData> m_playerScoreDict;
@@ -134,7 +143,7 @@ public class GameManager : NetworkBehaviour
 
         if (!m_playerScoreDict.ContainsKey(uniqueId))
         {
-            m_playerScoreDict.Add(uniqueId, new PlayerScoreData(playerName, 0, 0, 0));
+            m_playerScoreDict.Add(uniqueId, new PlayerScoreData(uniqueId, playerName, 0, 0, 0));
         }
         else
         {
@@ -150,6 +159,8 @@ public class GameManager : NetworkBehaviour
 
     private void SendAllScoreData()
     {
+        // wait for a while or until we know that everythin is up to date
+
         foreach (KeyValuePair<string, PlayerScoreData> psd in m_playerScoreDict)
         {
             if (UniqueIdNetworkIdMap.ContainsKey(psd.Key))
@@ -191,7 +202,6 @@ public class GameManager : NetworkBehaviour
             m_playerScoreDict[killerUID].kills += 1;
             m_playerScoreDict[killerUID].score += 1;
         }
-
 
         //foreach (KeyValuePair<ulong, PlayerScoreData> psd in m_playerScoreDict)
         //{
@@ -283,18 +293,29 @@ public class GameManager : NetworkBehaviour
         k.kills = killerKills;
         k.score = killerScore;
 
+        if (!RankingList.Contains(k))
+        {
+            RankingList.Add(k);
+        }
+        if (!RankingList.Contains(v))
+        {
+            RankingList.Add(v);
+        }
+
+        RankingList.Sort();
+
         // update UI
         ScoreChanged?.Invoke(victimId, killerId);
     }
     #endregion
 
-    private string GetUniqueIdForNetworkId(ulong playerId)
+    public string GetUniqueIdForNetworkId(ulong playerId)
     {
         print("GetUniqueIdForNetworkId " + playerId);
         return UniqueIdNetworkIdMap.FirstOrDefault(x => x.Value == playerId).Key;
     }
 
-    private ulong GetNetwrokIdForUniqueId(string uniqueId)
+    public ulong GetNetwrokIdForUniqueId(string uniqueId)
     {
         print("GetNetwrokIdForUniqueId " + uniqueId);
         return UniqueIdNetworkIdMap[uniqueId];
