@@ -7,28 +7,41 @@ public class UI_ScoreTable : MonoBehaviour
 {
     [SerializeField] UI_ScoreEntry m_entryPrefab;
 
-    private Dictionary<ulong, UI_ScoreEntry> m_entries;
+    private Dictionary<string, UI_ScoreEntry> m_entries;
 
     private GameManager m_gameManager;
 
     private void Start()
     {
-        m_entries = new Dictionary<ulong, UI_ScoreEntry>();
+        m_entries = new Dictionary<string, UI_ScoreEntry>();
 
         m_gameManager = FindObjectOfType<GameManager>();
         m_gameManager.ScoreChanged += OnScoreChanged;
+        m_gameManager.NameChanged += OnNameChanged;
     }
     private void OnDestroy()
     {
         if (m_gameManager != null)
         {
             m_gameManager.ScoreChanged -= OnScoreChanged;
+            m_gameManager.NameChanged -= OnNameChanged;
         }
     }
 
-    private void OnScoreChanged(ulong victimId, ulong killerId)
+    private void UpdateRanking()
     {
-        print("OnScoreChanged victim: " + victimId + " killer: " + killerId);
+
+    }
+
+    private void OnNameChanged(string uniqueId)
+    {
+        UI_ScoreEntry entry = m_entries[uniqueId];
+        entry.UpdateName(m_gameManager.GetPlayerData(uniqueId).name);
+    }
+
+    private void OnScoreChanged(string victimId, string killerId)
+    {
+        //print("OnScoreChanged victim: " + victimId + " killer: " + killerId);
 
         GameManager.PlayerScoreData victimData = m_gameManager.GetPlayerData(victimId);
         GameManager.PlayerScoreData killerData = m_gameManager.GetPlayerData(killerId);

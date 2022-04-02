@@ -6,6 +6,8 @@ using UnityEngine.SceneManagement;
 
 public class NW_PlayerScript : NetworkBehaviour
 {
+    public string UniqueId = string.Empty;
+
     // <killedPlayer, killedBy>
     public Action<ulong, ulong> PlayerKilled;
 

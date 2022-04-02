@@ -3,12 +3,12 @@ using UnityEngine;
 
 public class UI_ScoreEntry : MonoBehaviour
 {
-    public ulong PlayerId { get => m_playerId; }
-    private ulong m_playerId;
+    public string PlayerId { get => m_playerId; }
+    private string m_playerId;
 
     private TextMeshProUGUI m_name, m_kills, m_deaths, m_score;
 
-    public void Initilize(ulong playerId)
+    public void Initilize(string playerId)
     {
         m_name = transform.GetChild(0).GetComponent<TextMeshProUGUI>();
         m_kills = transform.GetChild(1).GetComponent<TextMeshProUGUI>();
